@@ -1,0 +1,5 @@
+EXPORTS 
+	process_packet
+	plugin_init
+	plugin_unload
+

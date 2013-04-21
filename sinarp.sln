@@ -1,0 +1,38 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "sinarp", "sinarp.vcxproj", "{BB14BF32-8F15-F7E9-EEF6-6EB1D11486B5}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "plugin_http_inject", "plugin\plugin_http_inject\plugin_http_inject.vcxproj", "{C930CB65-02EC-424A-8F73-A9788963B1A9}"
+	ProjectSection(ProjectDependencies) = postProject
+		{BB14BF32-8F15-F7E9-EEF6-6EB1D11486B5} = {BB14BF32-8F15-F7E9-EEF6-6EB1D11486B5}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "plugin_port_hijack", "plugin\plugin_port_hijack\sinarp_port_hijack.vcxproj", "{B82E0593-1CEF-44B7-AB3E-F3D416FC99E6}"
+	ProjectSection(ProjectDependencies) = postProject
+		{BB14BF32-8F15-F7E9-EEF6-6EB1D11486B5} = {BB14BF32-8F15-F7E9-EEF6-6EB1D11486B5}
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{BB14BF32-8F15-F7E9-EEF6-6EB1D11486B5}.Debug|Win32.ActiveCfg = Debug|Win32
+		{BB14BF32-8F15-F7E9-EEF6-6EB1D11486B5}.Debug|Win32.Build.0 = Debug|Win32
+		{BB14BF32-8F15-F7E9-EEF6-6EB1D11486B5}.Release|Win32.ActiveCfg = Release|Win32
+		{BB14BF32-8F15-F7E9-EEF6-6EB1D11486B5}.Release|Win32.Build.0 = Release|Win32
+		{C930CB65-02EC-424A-8F73-A9788963B1A9}.Debug|Win32.ActiveCfg = Debug|Win32
+		{C930CB65-02EC-424A-8F73-A9788963B1A9}.Debug|Win32.Build.0 = Debug|Win32
+		{C930CB65-02EC-424A-8F73-A9788963B1A9}.Release|Win32.ActiveCfg = Release|Win32
+		{C930CB65-02EC-424A-8F73-A9788963B1A9}.Release|Win32.Build.0 = Release|Win32
+		{B82E0593-1CEF-44B7-AB3E-F3D416FC99E6}.Debug|Win32.ActiveCfg = Debug|Win32
+		{B82E0593-1CEF-44B7-AB3E-F3D416FC99E6}.Debug|Win32.Build.0 = Debug|Win32
+		{B82E0593-1CEF-44B7-AB3E-F3D416FC99E6}.Release|Win32.ActiveCfg = Release|Win32
+		{B82E0593-1CEF-44B7-AB3E-F3D416FC99E6}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

@@ -1,0 +1,12 @@
+EXPORTS
+	sinarp_printf
+	sinarp_build_tcp_response_packet
+	sinarp_iptos
+	sinarp_memfind
+	g_adhandle
+	sinarp_take_out_string_by_char
+	sinarp_find_string_by_flag
+	g_opened_if_name
+	g_spoof_type
+	sinarp_get_mac_by_ip
+	sinarp_load_file_into_mem
