@@ -1,2 +1,16 @@
-sinarp  by sincoder 
-emil:admin@sincoder.com
+sinarp  by sincoder
+www.sincoder.com
+
+sinarp is a powerful arp attack tool 
+
+it can be run under linux or windows 
+
+it can do a arp spoof in a LAN and do a MITM attack
+
+then you can sniff password , do a DNS spoof ,send a fake http response as you like
+
+unlike other arp tool ,sinarp can just spoof the packet in one direction as A to B or both A to  B and B to A
+
+it support plugin ,you can write your own plugin make sinarp more useful for you
+
+
