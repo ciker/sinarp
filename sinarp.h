@@ -52,17 +52,6 @@ typedef uint32 BOOL;
 
 #define MTU 1500  //网络最大传输单元
 
-void DBG_MSG(const char *fmt, ...)
-{
-    va_list args;
-    int n;
-    char TempBuf[8192];
-    va_start(args, fmt);
-    n = vsprintf(TempBuf, fmt, args);
-    printf("%s", TempBuf);
-    va_end(args);
-}
-
 //#define  DBG_MSG(fmt,...) {\  // VS 2010 才支持这个 宏
 // fprintf(stderr,"[DEBUG] "fmt,__VA_ARGS__);}
 

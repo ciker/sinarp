@@ -38,7 +38,6 @@ ether src not $YOUR_MAC_ADDRESS
 #pragma comment(lib,"Iphlpapi.lib")
 #endif
 
-
 //----------  global var
 pcap_t *g_adhandle = NULL;  // 网卡句柄
 char g_opened_if_name[256] = {0};//打卡的网卡名称 因为有时候插件需要知道 打开的是哪块网卡 。。所以要把这个导出
@@ -60,6 +59,19 @@ volatile int64_t g_packet_count = 0;//数据包计数
 volatile uint32 g_auto_ip_forward = 1;//默认开启转发
 plugin_list g_plugin_list = {0};
 
+
+void DBG_MSG(const char *fmt, ...)
+{
+#ifdef DEBUG
+    va_list args;
+    int n;
+    char TempBuf[8192];
+    va_start(args, fmt);
+    n = vsprintf(TempBuf, fmt, args);
+    printf("%s", TempBuf);
+    va_end(args);
+#endif
+}
 
 #ifdef WIN32
 #else
@@ -1882,7 +1894,7 @@ void sinarp_process_mac_string(char *mac_string)
     {
         if ((slash = strchr(buff, '-'))) //12.12.12.12/24
         {
-            memset(ip,0,sizeof(ip));
+            memset(ip, 0, sizeof(ip));
             strncpy(ip, buff, slash - buff );
             pmac = slash + 1;
             if (sinarp_mac_from_string(pmac, (char *)mac))
@@ -1907,7 +1919,7 @@ void sinarp_process_mac_string(char *mac_string)
             }
             else
             {
-                DBG_MSG("%s get mac failed \n",__func__);
+                DBG_MSG("%s get mac failed \n", __func__);
             }
         }
     }
