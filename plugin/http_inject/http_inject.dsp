@@ -89,7 +89,7 @@ LINK32=link.exe
 # Name "http_inject - Win32 Debug"
 # Begin Source File
 
-SOURCE=.\http_inject.cpp
+SOURCE=.\http_inject.c
 # End Source File
 # Begin Source File
 

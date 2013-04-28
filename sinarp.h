@@ -1,5 +1,40 @@
-//Õâ¸öÍ·ÎÄ¼şÓÃÓÚ¸ø ²å¼şÀ´µ÷ÓÃ ¡£¡£¡£
-// °ÑÉú³ÉµÄ obj ÎÄ¼ş´ò°ü³ÉÒ»¸ö lib ÎÄ¼şÀ´¸ø²å¼şµ÷ÓÃ 
+//è¿™ä¸ªå¤´æ–‡ä»¶ç”¨äºç»™ æ’ä»¶æ¥è°ƒç”¨ ã€‚ã€‚ã€‚
+// æŠŠç”Ÿæˆçš„ obj æ–‡ä»¶æ‰“åŒ…æˆä¸€ä¸ª lib æ–‡ä»¶æ¥ç»™æ’ä»¶è°ƒç”¨
+#ifdef WIN32
+#define _WSPIAPI_COUNTOF
+#define _CRT_SECURE_NO_WARNINGS
+#endif
+
+#include <pcap.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <strings.h>
+#include <ctype.h>
+#include <math.h>
+#ifdef WIN32
+#include <WinSock2.h>
+#include <windows.h>
+#include <IPHlpApi.h>
+#else
+#include <dlfcn.h>
+#include <stdarg.h> //for va_list
+#include <sys/socket.h>
+#include <errno.h> //For errno - the error number
+#include <pthread.h>
+#include <fcntl.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+#include <netdb.h>    //hostend
+#include <arpa/inet.h>
+#include <netinet/tcp.h>    //Provides declarations for tcp header
+#include <netinet/ip.h>    //Provides declarations for ip header
+#include <sys/ioctl.h>
+#include <net/if.h>
+#include <linux/rtnetlink.h>
+#include <signal.h>
+#endif
 
 typedef unsigned int uint32;
 typedef unsigned short uint16;
@@ -15,20 +50,20 @@ typedef uint32 BOOL;
 #define snprintf _snprintf
 #endif
 
-#define MTU 1500  //ÍøÂç×î´ó´«Êäµ¥Ôª
+#define MTU 1500  //ç½‘ç»œæœ€å¤§ä¼ è¾“å•å…ƒ
 
-void DBG_MSG(const char *fmt,...)
+void DBG_MSG(const char *fmt, ...)
 {
     va_list args;
     int n;
     char TempBuf[8192];
     va_start(args, fmt);
     n = vsprintf(TempBuf, fmt, args);
-    printf("%s",TempBuf);
+    printf("%s", TempBuf);
     va_end(args);
 }
 
-//#define  DBG_MSG(fmt,...) {\  // VS 2010 ²ÅÖ§³ÖÕâ¸ö ºê 
+//#define  DBG_MSG(fmt,...) {\  // VS 2010 æ‰æ”¯æŒè¿™ä¸ª å®
 // fprintf(stderr,"[DEBUG] "fmt,__VA_ARGS__);}
 
 #define SAFE_FREE(x) do{ if(x) { free(x); x = NULL; } }while(0)
@@ -36,14 +71,14 @@ void DBG_MSG(const char *fmt,...)
 
 /*
 wpcap.dll
-pcap_perror			
-pcap_sendpacket		
-pcap_next_ex		
-pcap_freealldevs	
-pcap_close			
-pcap_breakloop		
-pcap_open_live		
-pcap_findalldevs	
+pcap_perror
+pcap_sendpacket
+pcap_next_ex
+pcap_freealldevs
+pcap_close
+pcap_breakloop
+pcap_open_live
+pcap_findalldevs
 */
 
 //-------- pcap func define -----
@@ -53,20 +88,20 @@ pcap_findalldevs
 
 #define ETHERTYPE_IP    0x0800
 #define ETHERTYPE_ARP   0x0806
-#define	ARP_REPLY	 0x0002			/* ARP reply */
+#define ARP_REPLY    0x0002         /* ARP reply */
 #define ARP_REQUEST  0x0001  /* arp request */
-#define ARPHRD_ETHER 	1
-#define ARP_LEN		 48
+#define ARPHRD_ETHER    1
+#define ARP_LEN        60  //  æŠ“åŒ…çœ‹äº†ä¸‹ éƒ½æ˜¯ 60 å•Š
 #define HEAD_LEN           54
 #define TCP_MAXLEN       1460
 #define PACKET_MAXLEN    1514
-// Ğ­Òé
+// åè®®
 #define PROTO_TCP     0x6
 #define PROTO_UDP     0x11
 
 typedef uint8 u_char;
 
-#pragma pack(push, 1)//È¡ÏûÄÚ´æ´óĞ¡×Ô¶¯¶ÔÆë
+#pragma pack(push, 1)//å–æ¶ˆå†…å­˜å¤§å°è‡ªåŠ¨å¯¹é½
 
 typedef struct ip_address
 {
@@ -74,90 +109,92 @@ typedef struct ip_address
     u_char byte2;
     u_char byte3;
     u_char byte4;
-}ip_address;
+} ip_address;
 
-typedef struct _ETHeader         // 14×Ö½ÚµÄÒÔÌ«Í·
+typedef struct _ETHeader         // 14å­—èŠ‚çš„ä»¥å¤ªå¤´
 {
-    uint8	dhost[6];			// Ä¿µÄMACµØÖ·destination mac address
-    uint8	shost[6];			// Ô´MACµØÖ·source mac address
-    uint16	type;				// ÏÂ²ãĞ­ÒéÀàĞÍ£¬ÈçIP£¨ETHERTYPE_IP£©¡¢ARP£¨ETHERTYPE_ARP£©µÈ
+    uint8   dhost[6];           // ç›®çš„MACåœ°å€destination mac address
+    uint8   shost[6];           // æºMACåœ°å€source mac address
+    uint16  type;               // ä¸‹å±‚åè®®ç±»å‹ï¼Œå¦‚IPï¼ˆETHERTYPE_IPï¼‰ã€ARPï¼ˆETHERTYPE_ARPï¼‰ç­‰
 } ETHeader, *PETHeader;
 
-typedef struct _ARPHeader		// 28×Ö½ÚµÄARPÍ·
+typedef struct _ARPHeader       // 28å­—èŠ‚çš„ARPå¤´
 {
-    uint16	hrd;				//	Ó²¼şµØÖ·¿Õ¼ä£¬ÒÔÌ«ÍøÖĞÎªARPHRD_ETHER
-    uint16	eth_type;			//  ÒÔÌ«ÍøÀàĞÍ£¬ETHERTYPE_IP £¿£¿
-    uint8	maclen;				//	MACµØÖ·µÄ³¤¶È£¬Îª6
-    uint8	iplen;				//	IPµØÖ·µÄ³¤¶È£¬Îª4
-    uint16	opcode;				//	²Ù×÷´úÂë£¬ARPOP_REQUESTÎªÇëÇó£¬ARPOP_REPLYÎªÏìÓ¦
-    uint8	smac[6];			//	Ô´MACµØÖ·
-    uint32	saddr;			//	Ô´IPµØÖ·
-    uint8	dmac[6];			//	Ä¿µÄMACµØÖ·
-    uint32	daddr;			//	Ä¿µÄIPµØÖ·
+    uint16  hrd;                //  ç¡¬ä»¶åœ°å€ç©ºé—´ï¼Œä»¥å¤ªç½‘ä¸­ä¸ºARPHRD_ETHER
+    uint16  eth_type;           //  ä»¥å¤ªç½‘ç±»å‹ï¼ŒETHERTYPE_IP ï¼Ÿï¼Ÿ
+    uint8   maclen;             //  MACåœ°å€çš„é•¿åº¦ï¼Œä¸º6
+    uint8   iplen;              //  IPåœ°å€çš„é•¿åº¦ï¼Œä¸º4
+    uint16  opcode;             //  æ“ä½œä»£ç ï¼ŒARPOP_REQUESTä¸ºè¯·æ±‚ï¼ŒARPOP_REPLYä¸ºå“åº”
+    uint8   smac[6];            //  æºMACåœ°å€
+    uint32  saddr;          //  æºIPåœ°å€
+    uint8   dmac[6];            //  ç›®çš„MACåœ°å€
+    uint32  daddr;          //  ç›®çš„IPåœ°å€
 } ARPHeader, *PARPHeader;
 
 typedef struct _ARP_PACKET
 {
     ETHeader ethdr;
     ARPHeader arphdr;
-    uint8 unused[6];//Ìî³äARP_PACKET µ½ARP_LEN
-}ARP_PACKET;
+    uint8 unused[6];//å¡«å……ARP_PACKET åˆ°ARP_LEN
+} ARP_PACKET;
 
-typedef struct _IPHeader		// 20×Ö½ÚµÄIPÍ·
+typedef struct _IPHeader        // 20å­—èŠ‚çš„IPå¤´
 {
-    uint8     iphVerLen;      // °æ±¾ºÅºÍÍ·³¤¶È£¨¸÷Õ¼4Î»£©
-    uint8     ipTOS;          // ·şÎñÀàĞÍ 
-    uint16    ipLength;       // ·â°ü×Ü³¤¶È£¬¼´Õû¸öIP±¨µÄ³¤¶È
-    uint16    ipID;			  // ·â°ü±êÊ¶£¬Î©Ò»±êÊ¶·¢ËÍµÄÃ¿Ò»¸öÊı¾İ±¨
-    uint16    ipFlags;	      // ±êÖ¾
-    uint8     ipTTL;	      // Éú´æÊ±¼ä£¬¾ÍÊÇTTL
-    uint8     ipProtocol;     // Ğ­Òé£¬¿ÉÄÜÊÇTCP¡¢UDP¡¢ICMPµÈ
-    uint16    ipChecksum;     // Ğ£ÑéºÍ
-    union {
+    uint8     iphVerLen;      // ç‰ˆæœ¬å·å’Œå¤´é•¿åº¦ï¼ˆå„å 4ä½ï¼‰
+    uint8     ipTOS;          // æœåŠ¡ç±»å‹
+    uint16    ipLength;       // å°åŒ…æ€»é•¿åº¦ï¼Œå³æ•´ä¸ªIPæŠ¥çš„é•¿åº¦
+    uint16    ipID;           // å°åŒ…æ ‡è¯†ï¼ŒæƒŸä¸€æ ‡è¯†å‘é€çš„æ¯ä¸€ä¸ªæ•°æ®æŠ¥
+    uint16    ipFlags;        // æ ‡å¿—
+    uint8     ipTTL;          // ç”Ÿå­˜æ—¶é—´ï¼Œå°±æ˜¯TTL
+    uint8     ipProtocol;     // åè®®ï¼Œå¯èƒ½æ˜¯TCPã€UDPã€ICMPç­‰
+    uint16    ipChecksum;     // æ ¡éªŒå’Œ
+    union
+    {
         unsigned int   ipSource;
         ip_address ipSourceByte;
     };
-    union {
+    union
+    {
         unsigned int   ipDestination;
         ip_address ipDestinationByte;
     };
-} IPHeader, *PIPHeader; 
+} IPHeader, *PIPHeader;
 
-typedef struct _TCPHeader		// 20×Ö½ÚµÄTCPÍ·
+typedef struct _TCPHeader       // 20å­—èŠ‚çš„TCPå¤´
 {
-    uint16	sourcePort;			// 16Î»Ô´¶Ë¿ÚºÅ
-    uint16	destinationPort;	// 16Î»Ä¿µÄ¶Ë¿ÚºÅ
-    uint32	sequenceNumber;		// 32Î»ĞòÁĞºÅ
-    uint32	acknowledgeNumber;	// 32Î»È·ÈÏºÅ
-    uint8	dataoffset;			// ¸ß4Î»±íÊ¾Êı¾İÆ«ÒÆ
-    uint8	flags;				// 6Î»±êÖ¾Î»
+    uint16  sourcePort;         // 16ä½æºç«¯å£å·
+    uint16  destinationPort;    // 16ä½ç›®çš„ç«¯å£å·
+    uint32  sequenceNumber;     // 32ä½åºåˆ—å·
+    uint32  acknowledgeNumber;  // 32ä½ç¡®è®¤å·
+    uint8   dataoffset;         // é«˜4ä½è¡¨ç¤ºæ•°æ®åç§»
+    uint8   flags;              // 6ä½æ ‡å¿—ä½
     //FIN - 0x01
     //SYN - 0x02
-    //RST - 0x04 
+    //RST - 0x04
     //PUSH- 0x08
     //ACK- 0x10
     //URG- 0x20
     //ACE- 0x40
     //CWR- 0x80
-    uint16	windows;			// 16Î»´°¿Ú´óĞ¡
-    uint16	checksum;			// 16Î»Ğ£ÑéºÍ
-    uint16	urgentPointer;		// 16Î»½ô¼±Êı¾İÆ«ÒÆÁ¿ 
+    uint16  windows;            // 16ä½çª—å£å¤§å°
+    uint16  checksum;           // 16ä½æ ¡éªŒå’Œ
+    uint16  urgentPointer;      // 16ä½ç´§æ€¥æ•°æ®åç§»é‡
 } TCPHeader, *PTCPHeader;
 
-typedef struct _udphdr	//¶¨ÒåUDPÊ×²¿ 
-{ 
-    unsigned short uh_sport;	//16Î»Ô´¶Ë¿Ú 
-    unsigned short uh_dport;	//16Î»Ä¿µÄ¶Ë¿Ú 
-    unsigned short uh_len;	//16Î»³¤¶È 
-    unsigned short uh_sum;	//16Î»Ğ£ÑéºÍ 
-}UDPHEADER, *PUDPHeader;
+typedef struct _udphdr  //å®šä¹‰UDPé¦–éƒ¨
+{
+    unsigned short uh_sport;    //16ä½æºç«¯å£
+    unsigned short uh_dport;    //16ä½ç›®çš„ç«¯å£
+    unsigned short uh_len;  //16ä½é•¿åº¦
+    unsigned short uh_sum;  //16ä½æ ¡éªŒå’Œ
+} UDPHEADER, *PUDPHeader;
 
 typedef struct _ACKPacket
 {
-    ETHeader	eh;
-    IPHeader	ih;
-    TCPHeader	th;
-}ACKPacket;
+    ETHeader    eh;
+    IPHeader    ih;
+    TCPHeader   th;
+} ACKPacket;
 
 typedef struct _psd
 {
@@ -166,12 +203,12 @@ typedef struct _psd
     char           mbz;
     char           ptcl;
     unsigned short udpl;
-}PSD,*PPSD;
+} PSD, *PPSD;
 
 typedef struct _dns
 {
-    unsigned short id;  //±êÊ¶£¬Í¨¹ıËü¿Í»§¶Ë¿ÉÒÔ½«DNSµÄÇëÇóÓëÓ¦´ğÏàÆ¥Åä£»
-    unsigned short flags;  //±êÖ¾£º[QR | opcode | AA| TC| RD| RA | zero | rcode ]
+    unsigned short id;  //æ ‡è¯†ï¼Œé€šè¿‡å®ƒå®¢æˆ·ç«¯å¯ä»¥å°†DNSçš„è¯·æ±‚ä¸åº”ç­”ç›¸åŒ¹é…ï¼›
+    unsigned short flags;  //æ ‡å¿—ï¼š[QR | opcode | AA| TC| RD| RA | zero | rcode ]
     //1 & htons(0x8000)
     //4 & htons(0x7800)
     //1 & htons(0x400)
@@ -180,31 +217,31 @@ typedef struct _dns
     //1 & htons(0x80)
     //3
     //4 & htons(0xF)
-    unsigned short quests;  //ÎÊÌâÊıÄ¿£»
-    unsigned short answers;  //×ÊÔ´¼ÇÂ¼ÊıÄ¿£»
-    unsigned short author;  //ÊÚÈ¨×ÊÔ´¼ÇÂ¼ÊıÄ¿£»
-    unsigned short addition;  //¶îÍâ×ÊÔ´¼ÇÂ¼ÊıÄ¿£»
-}TCPIP_DNS,*PDNS;
-//ÔÚ16Î»µÄ±êÖ¾ÖĞ£ºQRÎ»ÅĞ¶ÏÊÇ²éÑ¯/ÏìÓ¦±¨ÎÄ£¬opcodeÇø±ğ²éÑ¯ÀàĞÍ£¬AAÅĞ¶ÏÊÇ·ñÎªÊÚÈ¨»Ø´ğ£¬TCÅĞ¶ÏÊÇ·ñ¿É½Ø¶Ï£¬RDÅĞ¶ÏÊÇ·ñÆÚÍûµİ¹é²éÑ¯£¬RAÅĞ¶ÏÊÇ·ñÎª¿ÉÓÃµİ¹é£¬zero±ØĞëÎª0£¬rcodeÎª·µ»ØÂë×Ö¶Î¡£
+    unsigned short quests;  //é—®é¢˜æ•°ç›®ï¼›
+    unsigned short answers;  //èµ„æºè®°å½•æ•°ç›®ï¼›
+    unsigned short author;  //æˆæƒèµ„æºè®°å½•æ•°ç›®ï¼›
+    unsigned short addition;  //é¢å¤–èµ„æºè®°å½•æ•°ç›®ï¼›
+} TCPIP_DNS, *PDNS;
+//åœ¨16ä½çš„æ ‡å¿—ä¸­ï¼šQRä½åˆ¤æ–­æ˜¯æŸ¥è¯¢/å“åº”æŠ¥æ–‡ï¼ŒopcodeåŒºåˆ«æŸ¥è¯¢ç±»å‹ï¼ŒAAåˆ¤æ–­æ˜¯å¦ä¸ºæˆæƒå›ç­”ï¼ŒTCåˆ¤æ–­æ˜¯å¦å¯æˆªæ–­ï¼ŒRDåˆ¤æ–­æ˜¯å¦æœŸæœ›é€’å½’æŸ¥è¯¢ï¼ŒRAåˆ¤æ–­æ˜¯å¦ä¸ºå¯ç”¨é€’å½’ï¼Œzeroå¿…é¡»ä¸º0ï¼Œrcodeä¸ºè¿”å›ç å­—æ®µã€‚
 
-//DNS²éÑ¯Êı¾İ±¨£º
+//DNSæŸ¥è¯¢æ•°æ®æŠ¥ï¼š
 typedef struct query
 {
-    //unsigned char  *name;  //²éÑ¯µÄÓòÃû,²»¶¨³¤,ÕâÊÇÒ»¸ö´óĞ¡ÔÚ0µ½63Ö®¼äµÄ×Ö·û´®£»
-    unsigned short type;  //²éÑ¯ÀàĞÍ£¬´óÔ¼ÓĞ20¸ö²»Í¬µÄÀàĞÍ
-    unsigned short classes;  //²éÑ¯Àà,Í¨³£ÊÇAÀà¼È²éÑ¯IPµØÖ·¡£
-}QUERY,*PQUERY;
+    //unsigned char  *name;  //æŸ¥è¯¢çš„åŸŸå,ä¸å®šé•¿,è¿™æ˜¯ä¸€ä¸ªå¤§å°åœ¨0åˆ°63ä¹‹é—´çš„å­—ç¬¦ä¸²ï¼›
+    unsigned short type;  //æŸ¥è¯¢ç±»å‹ï¼Œå¤§çº¦æœ‰20ä¸ªä¸åŒçš„ç±»å‹
+    unsigned short classes;  //æŸ¥è¯¢ç±»,é€šå¸¸æ˜¯Aç±»æ—¢æŸ¥è¯¢IPåœ°å€ã€‚
+} QUERY, *PQUERY;
 
-//DNSÏìÓ¦Êı¾İ±¨£º
+//DNSå“åº”æ•°æ®æŠ¥ï¼š
 typedef struct response
 {
-    unsigned short name;   //²éÑ¯µÄÓòÃû
-    unsigned short type;  //²éÑ¯ÀàĞÍ
-    unsigned short classes;  //ÀàĞÍÂë
-    unsigned int   ttl;  //Éú´æÊ±¼ä
-    unsigned short length;  //×ÊÔ´Êı¾İ³¤¶È
-    unsigned int   addr;  //×ÊÔ´Êı¾İ
-}RESPONSE,*PRESPONSE;
+    unsigned short name;   //æŸ¥è¯¢çš„åŸŸå
+    unsigned short type;  //æŸ¥è¯¢ç±»å‹
+    unsigned short classes;  //ç±»å‹ç 
+    unsigned int   ttl;  //ç”Ÿå­˜æ—¶é—´
+    unsigned short length;  //èµ„æºæ•°æ®é•¿åº¦
+    unsigned int   addr;  //èµ„æºæ•°æ®
+} RESPONSE, *PRESPONSE;
 
 #pragma pack(pop)
 
@@ -212,15 +249,16 @@ typedef struct response
 typedef enum _host_type
 {
     HOST_UNKNOWN = 0,
-		HOST_A,
-		HOST_B
-}host_type;
+    HOST_A,
+    HOST_B
+} host_type;
 
 typedef enum _spoof_type
 {
     SPOOF_A,
-		SPOOF_AB
-}spoof_type;
+    SPOOF_AB,
+    SPOOF_NONE // no arp spoof 
+} spoof_type;
 
 
 typedef struct _Host
@@ -229,158 +267,138 @@ typedef struct _Host
     uint8     mac[6];
     uint8     active;
     host_type type;
-}Host;
+} Host;
 
 typedef struct _HostList
 {
     Host *pHost;
     uint32 HostCount;
-}HostList;
+} HostList;
 
 typedef struct _plugin_info
 {
     const char *name;
-    BOOL ( *process_packet)(ETHeader *,uint32);//²å¼ş¹ıÂËÊı¾İ°üµÄº¯Êı
-	BOOL (* plugin_init)();//²å¼ş³õÊ¼»¯
-	void* (* plugin_unload)();//²å¼ş±»Ğ¶ÔØ
-}plugin_info;
+    BOOL ( *process_packet)(ETHeader *, uint32); //æ’ä»¶è¿‡æ»¤æ•°æ®åŒ…çš„å‡½æ•°
+    BOOL (* plugin_init)();//æ’ä»¶åˆå§‹åŒ–
+    void *(* plugin_unload)();//æ’ä»¶è¢«å¸è½½
+} plugin_info;
 
 typedef struct _plugin_list
 {
     plugin_info *plugin;
     uint32 count;
-}plugin_list;
+} plugin_list;
 
-//pcap µÄº¯Êıµ÷ÓÃÀàĞÍÊÇµÄ
+//pcap çš„å‡½æ•°è°ƒç”¨ç±»å‹æ˜¯çš„
 void  ( * pf_pcap_perror)(pcap_t *p, char *prefix);
-int  ( * pf_pcap_sendpacket)(pcap_t * p,u_char *  buf,int size);
+int  ( * pf_pcap_sendpacket)(pcap_t *p, u_char   *buf, int size);
 int ( * pf_pcap_next_ex)(pcap_t *p, struct pcap_pkthdr **pkt_header, const u_char **pkt_data);
-void ( * pf_pcap_freealldevs)( pcap_if_t *  alldevsp );
+void ( * pf_pcap_freealldevs)( pcap_if_t   *alldevsp );
 void ( * pf_pcap_close)(pcap_t *p);
 void ( * pf_pcap_breakloop)(pcap_t * );
-int	( * pf_pcap_loop)(pcap_t *, int, pcap_handler, u_char *);
-pcap_t* ( * pf_pcap_open_live)(const char * device,
-							   int  	snaplen,
-							   int  	promisc,
-							   int  	to_ms,
-							   char *  	ebuf);
-int	( * pf_pcap_findalldevs)(pcap_if_t **, char *);
+int ( * pf_pcap_loop)(pcap_t *, int, pcap_handler, u_char *);
+pcap_t *( * pf_pcap_open_live)(const char *device,
+                               int      snaplen,
+                               int      promisc,
+                               int      to_ms,
+                               char    *ebuf);
+int ( * pf_pcap_findalldevs)(pcap_if_t **, char *);
 int ( *pf_pcap_compile)(pcap_t *, struct bpf_program *, const char *, int, bpf_u_int32);
 int ( *pf_pcap_setfilter)(pcap_t *, struct bpf_program *);
 
 
-//----------  global var
-pcap_t * g_adhandle = NULL; // Íø¿¨¾ä±ú
-char g_opened_if_name[256] = {0};//´ò¿¨µÄÍø¿¨Ãû³Æ ÒòÎªÓĞÊ±ºò²å¼şĞèÒªÖªµÀ ´ò¿ªµÄÊÇÄÄ¿éÍø¿¨ ¡£¡£ËùÒÔÒª°ÑÕâ¸öµ¼³ö
-uint32 g_interval = 3000;//3 s ÆÛÆ­Ò»´Î
-spoof_type g_spoof_type = SPOOF_AB; //Ä¬ÈÏÊÇË«ÏòÆÛÆ­
-Host  g_HostList[256] = {0}; //×¢ÒâÒªÈ«²¿³õÊ¼»¯Îª 0
-uint32 g_my_ip = 0;  // ×Ô¼ºµÄ ip Ò²¾ÍÊÇÖĞ¼äÈËµÄ ip
-uint8  g_my_mac[6] = {0}; //×Ô¼ºµÄ mac Ò²¾ÍÊÇÖĞ¼äÈËµÄ mac
-uint32 g_my_netmask = 0; //×ÓÍøÑÚÂë
-uint32 g_my_boardcast_addr = 0; //¹ã²¥µØÖ·
-uint32	 g_my_gw_addr;//Íø¹ØµÄµØÖ·
-uint8   g_my_gw_mac[6]={0xFF}; //Íø¹ØµÄ mac µØÖ·
-uint8	g_broadcast_mac[6] = {0xFF,0xFF,0xFF,0xFF,0xFF,0xFF}; //¾ÖÓòÍøÓÃÓÚ¹ã²¥µÄ MAC µØÖ·
-uint8	g_zero_mac[6] = {0x00,0x00,0x00,0x00,0x00,0x00};
-volatile uint32 g_is_capture_thread_active = 0;// ==0 Ïß³Ì·Ç»î¶¯µÄ 
-volatile uint32 g_is_spoof_thread_active = 0;
-volatile uint32 g_is_time_shutdown = 0;//ÄÇÁ½¸öÏß³ÌÊÇ²»ÊÇĞèÒª¹Ø±Õ
-volatile int64_t g_packet_count = 0;//Êı¾İ°ü¼ÆÊı
-volatile uint32 g_auto_ip_forward = 1;//Ä¬ÈÏ¿ªÆô×ª·¢
-plugin_list g_plugin_list={0};
 
-char *   sinarp_iptos(u_long in);
-BOOL  sinarp_build_tcp_response_packet(ETHeader *ethdr,uint8 *packet,uint32 * psize,uint8 *data,uint32 size);
+char    *sinarp_iptos(u_long in);
+BOOL  sinarp_build_tcp_response_packet(ETHeader *ethdr, uint8 *packet, uint32 *psize, uint8 *data, uint32 size);
 /*
-¹¹½¨Ò»¸ö ARP Êı¾İ°ü
+æ„å»ºä¸€ä¸ª ARP æ•°æ®åŒ…
 */
 int  sinarp_build_arp_packet(\
-							 ARP_PACKET *arp_packet,
-							 uint16 arp_opcode,//Òª·¢ËÍµÄARP°üµÄÀàĞÍ  
-							 uint8 src_mac[6],
-							 uint8 dst_mac[6],
-							 uint8 arp_src_mac[6],
-							 uint32 arp_src_ip,
-							 uint8 arp_dst_mac[6],
-							 uint32 arp_dst_ip);
-							 /*
-							 ·¢ËÍ ARP ÇëÇó°ü ÓÃÓÚÖØĞÂ»ñµÃ DestIp µÄMACµØÖ·
+                             ARP_PACKET *arp_packet,
+                             uint16 arp_opcode,//è¦å‘é€çš„ARPåŒ…çš„ç±»å‹
+                             uint8 src_mac[6],
+                             uint8 dst_mac[6],
+                             uint8 arp_src_mac[6],
+                             uint32 arp_src_ip,
+                             uint8 arp_dst_mac[6],
+                             uint32 arp_dst_ip);
+/*
+å‘é€ ARP è¯·æ±‚åŒ… ç”¨äºé‡æ–°è·å¾— DestIp çš„MACåœ°å€
 */
 BOOL  sinarp_send_arp(uint32 DestIP);
 /*
-¸æËß spoof_ip ip ¶ÔÓ¦µÄ MAC ÊÇ mac
+å‘Šè¯‰ spoof_ip ip å¯¹åº”çš„ MAC æ˜¯ mac
 */
-BOOL   sinarp_arp_spoof(uint32 spoof_ip,uint8 *spoof_mac,uint32 ip,uint8 *mac);
+BOOL   sinarp_arp_spoof(uint32 spoof_ip, uint8 *spoof_mac, uint32 ip, uint8 *mac);
 
 //
-// ¼ÆËãtcp udp¼ìÑéºÍµÄº¯Êı
-// 
+// è®¡ç®—tcp udpæ£€éªŒå’Œçš„å‡½æ•°
+//
 void  sinarp_checksum(IPHeader *pIphdr);
 
-// from NetFuke Source 
-// ÄÚ´æÆ¥Åäº¯Êımemfind
-// »ùÓÚBMËã·¨
-// ×÷Õß:ÖÜÁØ KCN
+// from NetFuke Source
+// å†…å­˜åŒ¹é…å‡½æ•°memfind
+// åŸºäºBMç®—æ³•
+// ä½œè€…:å‘¨éœ– KCN
 // modified by shadow @2007/03/18
-void*  sinarp_memfind( const void*		in_block,		/* Êı¾İ¿é */
-					  const size_t	block_size,		/* Êı¾İ¿é³¤¶È */
-					  const void*		in_pattern,		/* ĞèÒª²éÕÒµÄÊı¾İ */
-					  const size_t	pattern_size,	/* ²éÕÒÊı¾İµÄ³¤¶È */
-					  size_t*			shift_table,	/* ÒÆÎ»±í£¬Ó¦¸ÃÊÇ256*size_tµÄÊı×é */
-					  BOOL			b_init );		/* ÊÇ·ñĞèÒª³õÊ¼»¯ÒÆÎ»±í */
+void  *sinarp_memfind( const void      *in_block,       /* æ•°æ®å— */
+                       const size_t  block_size,     /* æ•°æ®å—é•¿åº¦ */
+                       const void       *in_pattern,     /* éœ€è¦æŸ¥æ‰¾çš„æ•°æ® */
+                       const size_t  pattern_size,   /* æŸ¥æ‰¾æ•°æ®çš„é•¿åº¦ */
+                       size_t           *shift_table,    /* ç§»ä½è¡¨ï¼Œåº”è¯¥æ˜¯256*size_tçš„æ•°ç»„ */
+                       BOOL          b_init );       /* æ˜¯å¦éœ€è¦åˆå§‹åŒ–ç§»ä½è¡¨ */
 
-													/*
-													¸ù¾İÊäÈëµÄ Êı¾İ°ü Éú³ÉÒ»¸ö»Ø¸´°ü ¡£
-													packet ÊÇ´«ÈëµÄ»º³åÇø´óĞ¡ÓÃÓÚ´æ·ÅÊı¾İ°ü  ×îºóµÄÊı¾İ°ü´óĞ¡²»»á³¬¹ı MTU ¼´ 1500
-													psize ÓÃÓÚ½ÓÊÕÊı¾İ°üµÄ´óĞ¡
-													data ÒªĞ´ÈëµÄ tcp Êı¾İ
-													size ÊÇtcpÊı¾İµÄ³¤¶È
-*/
-BOOL  sinarp_build_tcp_response_packet(ETHeader *ethdr,uint8 *packet,uint32 * psize,uint8 *data,uint32 size);
 /*
-´¦ÀíÒª×ª·¢µÄÊı¾İ°ü
+æ ¹æ®è¾“å…¥çš„ æ•°æ®åŒ… ç”Ÿæˆä¸€ä¸ªå›å¤åŒ… ã€‚
+packet æ˜¯ä¼ å…¥çš„ç¼“å†²åŒºå¤§å°ç”¨äºå­˜æ”¾æ•°æ®åŒ…  æœ€åçš„æ•°æ®åŒ…å¤§å°ä¸ä¼šè¶…è¿‡ MTU å³ 1500
+psize ç”¨äºæ¥æ”¶æ•°æ®åŒ…çš„å¤§å°
+data è¦å†™å…¥çš„ tcp æ•°æ®
+size æ˜¯tcpæ•°æ®çš„é•¿åº¦
 */
-BOOL  sinarp_process_packet(ETHeader *ethdr ,uint32 packet_len);
+BOOL  sinarp_build_tcp_response_packet(ETHeader *ethdr, uint8 *packet, uint32 *psize, uint8 *data, uint32 size);
+/*
+å¤„ç†è¦è½¬å‘çš„æ•°æ®åŒ…
+*/
+BOOL  sinarp_process_packet(ETHeader *ethdr , uint32 packet_len);
 
-//ĞŞÕı°üµÄmacµØÖ· ÓÃÓÚ×ª·¢
+//ä¿®æ­£åŒ…çš„macåœ°å€ ç”¨äºè½¬å‘
 void  sinarp_forward_fix_packet(ETHeader *packet);
 
-uint32  sinarp_hostname_to_ip(char * hostname);
+uint32  sinarp_hostname_to_ip(char *hostname);
 
-int  sinarp_parse_host_string(const char *host_string,host_type type);
+int  sinarp_parse_host_string(const char *host_string, host_type type);
 
-char *  sinarp_iptos(u_long in);  //ip µ½ ×Ö·û´®ĞÎÊ½µÄ ip 
+char   *sinarp_iptos(u_long in);  //ip åˆ° å­—ç¬¦ä¸²å½¢å¼çš„ ip
 
-const char *  sinarp_take_out_string_by_char(const char *Source,char *Dest, int buflen, char ch);
+const char   *sinarp_take_out_string_by_char(const char *Source, char *Dest, int buflen, char ch);
 
-void  sinarp_printf(const char * fmt,...);
+void  sinarp_printf(const char *fmt, ...);
 
 BOOL  sinarp_find_string_by_flag(
-								 const char*		p_szContent,
-								 const char*		p_szFlag1,
-								 const char*		p_szFlag2,
-								 char*			p_szValue,
-								 const uint32	i4_ValuseSize
-								 );
+    const char        *p_szContent,
+    const char        *p_szFlag1,
+    const char        *p_szFlag2,
+    char          *p_szValue,
+    const uint32   i4_ValuseSize
+);
 
-char *  sinarp_get_mac_by_ip(uint32 ip);
+char   *sinarp_get_mac_by_ip(uint32 ip);
 
 /*
-¼ÓÔØ²å¼ş
+åŠ è½½æ’ä»¶
 */
 BOOL  sinarp_load_plugin(const char *szPluginName);
 void  sinarp_ifprint(pcap_if_t *d);
 
 /*
-¼ÓÔØÎÄ¼şµÄÄÚÈİµ½ÄÚ´æ ·µ»ØÉêÇëµÄÄÚ´æ ÒªÊ¹ÓÃ free ÊÍ·Å ~~
+åŠ è½½æ–‡ä»¶çš„å†…å®¹åˆ°å†…å­˜ è¿”å›ç”³è¯·çš„å†…å­˜ è¦ä½¿ç”¨ free é‡Šæ”¾ ~~
 */
 uint8 *sinarp_load_file_into_mem(const char *file);
 
 #ifdef WIN32
-void sinarp_create_thread(DWORD (__stdcall *func)(void *),void *lparam);
+void sinarp_create_thread(DWORD (__stdcall *func)(void *), void *lparam);
 #else //for Linux 
-void sinarp_create_thread(void* ( *func)(void *),void *lparam);
+void sinarp_create_thread(void * ( *func)(void *), void *lparam);
 #endif
 
 #ifdef WIN32

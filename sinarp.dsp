@@ -90,7 +90,7 @@ LINK32=link.exe
 # End Group
 # Begin Source File
 
-SOURCE=.\sinarp.cpp
+SOURCE=.\sinarp.c
 # End Source File
 # Begin Source File
 
