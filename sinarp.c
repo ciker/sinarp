@@ -38,7 +38,9 @@ ether src not $YOUR_MAC_ADDRESS
 #pragma comment(lib,"Iphlpapi.lib")
 #endif
 
+
 //----------  global var
+char *g_sinarp_version = "sinarp V2.1";
 pcap_t *g_adhandle = NULL;  // 网卡句柄
 char g_opened_if_name[256] = {0};//打卡的网卡名称 因为有时候插件需要知道 打开的是哪块网卡 。。所以要把这个导出
 uint32 g_interval = 3000;//3 s 欺骗一次
@@ -58,6 +60,22 @@ volatile uint32 g_is_time_shutdown = 0;//那两个线程是不是需要关闭
 volatile int64_t g_packet_count = 0;//数据包计数
 volatile uint32 g_auto_ip_forward = 1;//默认开启转发
 plugin_list g_plugin_list = {0};
+
+void  ( * pf_pcap_perror)(pcap_t *p, char *prefix);
+int  ( * pf_pcap_sendpacket)(pcap_t *p, u_char   *buf, int size);
+int ( * pf_pcap_next_ex)(pcap_t *p, struct pcap_pkthdr **pkt_header, const u_char **pkt_data);
+void ( * pf_pcap_freealldevs)( pcap_if_t   *alldevsp );
+void ( * pf_pcap_close)(pcap_t *p);
+void ( * pf_pcap_breakloop)(pcap_t * );
+int ( * pf_pcap_loop)(pcap_t *, int, pcap_handler, u_char *);
+pcap_t *( * pf_pcap_open_live)(const char *device,
+                               int      snaplen,
+                               int      promisc,
+                               int      to_ms,
+                               char    *ebuf);
+int ( * pf_pcap_findalldevs)(pcap_if_t **, char *);
+int ( *pf_pcap_compile)(pcap_t *, struct bpf_program *, const char *, int, bpf_u_int32);
+int ( *pf_pcap_setfilter)(pcap_t *, struct bpf_program *);
 
 
 void DBG_MSG(const char *fmt, ...)
@@ -86,7 +104,7 @@ void Sleep(uint32 msec)
     }
     else
     {
-        sinarp_printf("%s : %u", "nanosleep failed !!\n", msec);
+        DBG_MSG("%s : %u", "nanosleep failed !!\n", msec);
     }
 }
 #endif
@@ -472,10 +490,10 @@ BOOL sinarp_init_pcap_funcs()
 
 void sinarp_copyright_msg()
 {
-    printf(\
-           "sinarp 2.0\n"
+    sinarp_printf(\
+           "%s\n"
            //"基于ARP欺骗的中间人攻击工具\n"
-           "By:sincoder\nBlog:www.sincoder.com\nEmail:2bcoder@gmail.com\n");
+           "By:sincoder\nBlog:www.sincoder.com\nEmail:2bcoder@gmail.com\n",g_sinarp_version);
 }
 
 void sinarp_show_help_msg()
@@ -2415,7 +2433,7 @@ int  main(int argc , char **argv)
     //check plugin
     if (g_plugin_list.count < 1)
     {
-        sinarp_printf("Warning: sinarp do not load any plugin !\n");
+        sinarp_printf("Warning:sinarp do not load any plugin !\n");
     }
     else
     {

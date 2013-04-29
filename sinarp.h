@@ -278,22 +278,44 @@ typedef struct _plugin_list
     uint32 count;
 } plugin_list;
 
+
+extern char *g_sinarp_version;
+extern pcap_t *g_adhandle;// = NULL;  // 网卡句柄
+extern char g_opened_if_name[256];// = {0};//打卡的网卡名称 因为有时候插件需要知道 打开的是哪块网卡 。。所以要把这个导出
+extern uint32 g_interval;// = 3000;//3 s 欺骗一次
+extern spoof_type g_spoof_type;// = SPOOF_AB; //默认是双向欺骗
+extern Host  g_HostList[256]; //注意要全部初始化为 0
+extern uint32 g_my_ip ;//= 0;  // 自己的 ip 也就是中间人的 ip
+extern uint8  g_my_mac[6] ;//= {0}; //自己的 mac 也就是中间人的 mac
+extern uint32 g_my_netmask ;//= 0; //子网掩码
+extern uint32 g_my_boardcast_addr;// = 0; //广播地址
+extern uint32   g_my_gw_addr;//网关的地址
+extern uint8   g_my_gw_mac[6] ;//= {0xFF}; //网关的 mac 地址
+extern uint8   g_broadcast_mac[6] ;//= {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF}; //局域网用于广播的 MAC 地址
+extern uint8   g_zero_mac[6];// = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+extern volatile uint32 g_is_capture_thread_active;// = 0;// ==0 线程非活动的
+extern volatile uint32 g_is_spoof_thread_active ;//= 0;
+extern volatile uint32 g_is_time_shutdown ;//= 0;//那两个线程是不是需要关闭
+extern volatile int64_t g_packet_count;// = 0;//数据包计数
+extern volatile uint32 g_auto_ip_forward;// = 1;//默认开启转发
+extern plugin_list g_plugin_list;// = {0};
+
 //pcap 的函数调用类型是的
-void  ( * pf_pcap_perror)(pcap_t *p, char *prefix);
-int  ( * pf_pcap_sendpacket)(pcap_t *p, u_char   *buf, int size);
-int ( * pf_pcap_next_ex)(pcap_t *p, struct pcap_pkthdr **pkt_header, const u_char **pkt_data);
-void ( * pf_pcap_freealldevs)( pcap_if_t   *alldevsp );
-void ( * pf_pcap_close)(pcap_t *p);
-void ( * pf_pcap_breakloop)(pcap_t * );
-int ( * pf_pcap_loop)(pcap_t *, int, pcap_handler, u_char *);
-pcap_t *( * pf_pcap_open_live)(const char *device,
+extern void  ( * pf_pcap_perror)(pcap_t *p, char *prefix);
+extern int  ( * pf_pcap_sendpacket)(pcap_t *p, u_char   *buf, int size);
+extern int ( * pf_pcap_next_ex)(pcap_t *p, struct pcap_pkthdr **pkt_header, const u_char **pkt_data);
+extern void ( * pf_pcap_freealldevs)( pcap_if_t   *alldevsp );
+extern void ( * pf_pcap_close)(pcap_t *p);
+extern void ( * pf_pcap_breakloop)(pcap_t * );
+extern int ( * pf_pcap_loop)(pcap_t *, int, pcap_handler, u_char *);
+extern pcap_t *( * pf_pcap_open_live)(const char *device,
                                int      snaplen,
                                int      promisc,
                                int      to_ms,
                                char    *ebuf);
-int ( * pf_pcap_findalldevs)(pcap_if_t **, char *);
-int ( *pf_pcap_compile)(pcap_t *, struct bpf_program *, const char *, int, bpf_u_int32);
-int ( *pf_pcap_setfilter)(pcap_t *, struct bpf_program *);
+extern int ( * pf_pcap_findalldevs)(pcap_if_t **, char *);
+extern int ( *pf_pcap_compile)(pcap_t *, struct bpf_program *, const char *, int, bpf_u_int32);
+extern int ( *pf_pcap_setfilter)(pcap_t *, struct bpf_program *);
 
 
 
