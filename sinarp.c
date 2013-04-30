@@ -507,7 +507,7 @@ void sinarp_show_help_msg()
                   "\t-p [Name of the plug-ins to be loaded, split multiple plugin use ',']\n"
                   "\t-t [Time between echo spoof packet , in ms, default is 10000ms]\n"
                   "\t-f [Close ip forwarding]\n"
-                  "\t--mac [ip1:mac1,ip2:mac2] special the mac of the ip \n");
+                  "\t--mac [ip1-mac1,ip2-mac2] special the mac of the ip \n");
 }
 /*
 void sinarp_show_help_msg()
