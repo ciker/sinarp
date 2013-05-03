@@ -433,13 +433,10 @@ spoof:
 
 BOOL plugin_init()
 {
-	//HANDLE hfile;
-	//HMODULE hexe;
 	uint8 *config_data;
-	uint32 dwBytes = 0;
 	char buff[65535] ={0};
 	char value[65535] = {0};
-	const char *p1, *p2;
+	const char *p1;
 	char pix[10];
 	filter_pix *pfilter = NULL;
 	
@@ -458,7 +455,6 @@ BOOL plugin_init()
 	else
 	{
 		sinarp_printf("%s   \n ",config_data);
-
 		strcpy((char *)buff,(char *)config_data);
 
 		//free(config_data);
