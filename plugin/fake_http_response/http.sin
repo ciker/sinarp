@@ -8,6 +8,4 @@ X-Powered-By: PHP/5.3.13
 Connection: Close
 Content-Type: text/html
 
-<html>
-<title>sinarp test</title>
-http://$_host_$/$_url_$ is haced by sincoder ! just for fun !! </html>]  //要回复的信息
+<html>http://$_host_$/$_url_$ is haced by sincoder ! just for fun !! </html>]  //要回复的信息
