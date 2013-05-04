@@ -3,4 +3,6 @@ debug:sinarp.c sinarp.h
 release:sinarp.c sinarp.c
 	gcc -ldl -lm -o2  -fPIC -lpthread -rdynamic  -I./WpdPack/Include/ sinarp.c -o sinarp
 clean:
-	rm sinarp
+	rm sinarp -rf
+	find -iregex '.*\(release\|debug\)$$' -type d -exec rm {} -rf \;
+	
