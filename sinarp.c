@@ -1,38 +1,24 @@
 /*
-sinarp ARP 中间人欺骗工具
-单向 双向欺骗
-加载插件
-可以篡改数据包
-基于 zxarps  ettercap 的代码
-可以在 windows 和 linux 下编译
+Copyright (C) 2012-2013 sincoder
+www.sincoder.com
 
-双向欺骗：
-A<--->M<--->B
-单向欺骗
-A --->M---->B
+This program is free software; you can redistribute it and / or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
 
-sinarp 插件的接口
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
 
-plugin_init();  //加载插件
-plugin_process_packet(); //处理数据包
-plugin_unload(); //卸载插件
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110 - 1301, USA.
 
-只关注一个C段
-
-最好设置下 让 pcap 不捕获 自己发出去的包
-
-ether src not $YOUR_MAC_ADDRESS
-
-经过几天的奋战  终于整的差不多了
-
-回去把 ARP 欺骗要用到的 Js 写好
-
-然后移植到Linux下 ~~~
-
-
-// ip 欺骗
 */
 #include "sinarp.h"
+
 #ifdef WIN32
 #pragma comment(lib,"ws2_32")
 #pragma comment(lib,"Iphlpapi.lib")
@@ -59,7 +45,7 @@ volatile uint32 g_is_spoof_thread_active = 0;
 volatile uint32 g_is_time_shutdown = 0;//那两个线程是不是需要关闭
 volatile int64_t g_packet_count = 0;//数据包计数
 volatile uint32 g_auto_ip_forward = 1;//默认开启转发
-plugin_list g_plugin_list = {0};
+plugin_list g_plugin_list = {0};  // the plugin list 
 
 void  ( * pf_pcap_perror)(pcap_t *p, char *prefix);
 int  ( * pf_pcap_sendpacket)(pcap_t *p, u_char   *buf, int size);
