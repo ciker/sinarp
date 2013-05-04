@@ -307,7 +307,7 @@
 			"file": "sinarp.c",
 			"settings":
 			{
-				"buffer_size": 71652,
+				"buffer_size": 72115,
 				"line_ending": "Unix"
 			}
 		},
@@ -323,7 +323,23 @@
 			"file": "plugin/fake_http_response/fake_http_response.c",
 			"settings":
 			{
-				"buffer_size": 15782,
+				"buffer_size": 20603,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "bin/http.sin",
+			"settings":
+			{
+				"buffer_size": 384,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "plugin/port_hijack/port_hijack.c",
+			"settings":
+			{
+				"buffer_size": 8049,
 				"line_ending": "Unix"
 			}
 		},
@@ -331,15 +347,7 @@
 			"file": "plugin/replace_http_response/replace_http_response.c",
 			"settings":
 			{
-				"buffer_size": 88,
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"file": "plugin/http_sniffer/http_sniffer.c",
-			"settings":
-			{
-				"buffer_size": 0,
+				"buffer_size": 391,
 				"line_ending": "Unix"
 			}
 		}
@@ -428,6 +436,14 @@
 	},
 	"file_history":
 	[
+		"/root/project/sinarp/plugin/port_hijack/Makefile",
+		"/root/project/sinarp/plugin/http_sniffer/http_sniffer.c",
+		"/root/project/sinarp/README",
+		"/root/project/sinarp/plugin/port_hijack/port_hijack.def",
+		"/root/.config/sublime-text-2/Packages/GBK Encoding Support/tmp/port_hijack.c                %2Froot%2Fproject%2Fsinarp%2Fplugin%2Fport_hijack%2Fport_hijack.c",
+		"/root/project/sinarp/plugin/port_hijack/port_hijack.c",
+		"/root/.config/sublime-text-2/Packages/GBK Encoding Support/tmp/http.sin                %2Froot%2Fproject%2Fsinarp%2Fbin%2Fhttp.sin",
+		"/root/project/sinarp/bin/http.sin",
 		"/root/SinKeylogger/http.h",
 		"/root/SinKeylogger/sinkeylogger.sublime-project",
 		"/root/.config/sublime-text-2/Packages/GBK Encoding Support/tmp/keylog.h                %2Froot%2FSinKeylogger%2Fkeylog.h",
@@ -521,7 +537,7 @@
 	"groups":
 	[
 		{
-			"selected": 0,
+			"selected": 5,
 			"sheets":
 			[
 				{
@@ -529,15 +545,15 @@
 					"file": "sinarp.c",
 					"settings":
 					{
-						"buffer_size": 71652,
+						"buffer_size": 72115,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								71652,
-								71652
+								4358,
+								4358
 							]
 						],
 						"settings":
@@ -592,7 +608,7 @@
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 36644.0,
+						"translation.y": 1484.0,
 						"zoom_level": 1.0
 					},
 					"type": "text"
@@ -675,15 +691,15 @@
 					"file": "plugin/fake_http_response/fake_http_response.c",
 					"settings":
 					{
-						"buffer_size": 15782,
+						"buffer_size": 20603,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								2950,
-								2950
+								758,
+								758
 							]
 						],
 						"settings":
@@ -737,25 +753,25 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 1635.0,
+						"translation.y": 225.0,
 						"zoom_level": 1.0
 					},
 					"type": "text"
 				},
 				{
 					"buffer": 3,
-					"file": "plugin/replace_http_response/replace_http_response.c",
+					"file": "bin/http.sin",
 					"settings":
 					{
-						"buffer_size": 88,
+						"buffer_size": 384,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								87,
-								87
+								321,
+								321
 							]
 						],
 						"settings":
@@ -804,8 +820,10 @@
 								"bh_single_quote_open",
 								"bh_single_quote_close"
 							],
-							"origin_encoding": "ASCII",
-							"syntax": "Packages/C++/C.tmLanguage"
+							"in_converting": true,
+							"origin_encoding": "UTF-8",
+							"syntax": "Packages/Text/Plain text.tmLanguage",
+							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
 						"translation.y": 0.0,
@@ -815,18 +833,90 @@
 				},
 				{
 					"buffer": 4,
-					"file": "plugin/http_sniffer/http_sniffer.c",
+					"file": "plugin/port_hijack/port_hijack.c",
 					"settings":
 					{
-						"buffer_size": 0,
+						"buffer_size": 8049,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								0,
-								0
+								691,
+								691
+							]
+						],
+						"settings":
+						{
+							"BracketHighlighterBusy": false,
+							"bh_regions":
+							[
+								"bh_regex",
+								"bh_regex_center",
+								"bh_regex_open",
+								"bh_regex_close",
+								"bh_double_quote",
+								"bh_double_quote_center",
+								"bh_double_quote_open",
+								"bh_double_quote_close",
+								"bh_square",
+								"bh_square_center",
+								"bh_square_open",
+								"bh_square_close",
+								"bh_angle",
+								"bh_angle_center",
+								"bh_angle_open",
+								"bh_angle_close",
+								"bh_curly",
+								"bh_curly_center",
+								"bh_curly_open",
+								"bh_curly_close",
+								"bh_default",
+								"bh_default_center",
+								"bh_default_open",
+								"bh_default_close",
+								"bh_unmatched",
+								"bh_unmatched_center",
+								"bh_unmatched_open",
+								"bh_unmatched_close",
+								"bh_round",
+								"bh_round_center",
+								"bh_round_open",
+								"bh_round_close",
+								"bh_tag",
+								"bh_tag_center",
+								"bh_tag_open",
+								"bh_tag_close",
+								"bh_single_quote",
+								"bh_single_quote_center",
+								"bh_single_quote_open",
+								"bh_single_quote_close"
+							],
+							"origin_encoding": "UTF-8",
+							"syntax": "Packages/C++/C.tmLanguage",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 426.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 5,
+					"file": "plugin/replace_http_response/replace_http_response.c",
+					"settings":
+					{
+						"buffer_size": 391,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								308,
+								308
 							]
 						],
 						"settings":
@@ -920,7 +1010,7 @@
 	"menu_visible": true,
 	"output.clang":
 	{
-		"height": 148.0
+		"height": 100.0
 	},
 	"replace":
 	{
