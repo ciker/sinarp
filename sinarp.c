@@ -1475,7 +1475,8 @@ void *sinarp_spoof_thread(void *lparam)
                 {
                     for (j = 0 ; j < 0xFF; j++)
                     {
-                        if (g_HostList[j].type == HOST_B && g_HostList[j].active == 1)
+                        //单向欺骗的时候不检查 B  是不是存活的
+                        if (g_HostList[j].type == HOST_B )//&& g_HostList[j].active == 1)
                         {
                             sinarp_arp_spoof(g_HostList[i].ip, g_HostList[i].mac, g_HostList[j].ip, g_my_mac);
                         }
@@ -2279,11 +2280,15 @@ int  main(int argc , char **argv)
         switch (g_HostList[idx].type)
         {
         case HOST_A:
-        case HOST_B:
-        {
             sinarp_send_arp(g_HostList[idx].ip);
-        }
-        break;
+            break;
+        case HOST_B:
+            if (SPOOF_AB == g_spoof_type
+                    || 1 == g_auto_ip_forward)  // 单向欺骗 而且不需要转发的时候 不去获取 B 的 MAC
+            {
+                sinarp_send_arp(g_HostList[idx].ip);
+            }
+            break;
         default:
             if (g_HostList[idx].ip == g_my_gw_addr)
             {
@@ -2328,7 +2333,8 @@ int  main(int argc , char **argv)
         }
     }
 
-    if (active_count_A < 1 || active_count_B < 1)
+    if (active_count_A < 1 ||
+            (active_count_B < 1 && (1 == g_auto_ip_forward || SPOOF_AB == g_spoof_type) ))
     {
         if (active_count_A < 1)
         {
@@ -2340,6 +2346,11 @@ int  main(int argc , char **argv)
         }
         pf_pcap_breakloop(g_adhandle);
         goto clean;
+    }
+
+    if (SPOOF_A == g_spoof_type)
+    {
+        sinarp_printf("Warining:in spoof mode 0 ,check the active host B yourself...\n");
     }
     //打印下活动主机列表
     sinarp_printf("Active host list:\n");
@@ -2395,6 +2406,12 @@ int  main(int argc , char **argv)
                               g_HostList[idx].mac[3],
                               g_HostList[idx].mac[4],
                               g_HostList[idx].mac[5]);
+            }
+            if (SPOOF_A == g_spoof_type && 0 == g_auto_ip_forward)
+            {
+                sinarp_printf("\t%-20s %-20s\n",
+                              sinarp_iptos(g_HostList[idx].ip),
+                              "don't need!");
             }
             break;
         default:
