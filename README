@@ -1,9 +1,48 @@
-sinarp  by sincoder
+sinarp  
 
-www.sincoder.com
+copyright 2012-2013 sincoder
+
+Site:www.sincoder.com
+
+Email:admin#sincoder.com
 
 License GPL 
 
+sinarp 是用来做 ARP 欺骗的 支持插件 来做中间人攻击
+
+Usage:sinarp [OPTIONS]
+	-i [network interface id]  <--- 指定网卡的 id
+	-A [Target A]              <--- A 组主机
+	-M [Middleman's ip,if the adapter has multiple ip ,you need to specify one] 
+		^
+		|__中间人ip 一般时候不需要指定 但是当网卡上面有多个ip的时候 可能需要指定一个ip 
+
+	-B [Target B] <-- B 组主机
+	-s [0|1|2] spoof type 0: A --> M --> B 1:  A <--> M <--> B 2: no arp spoof 
+	^
+	|--- 欺骗模式 0 是单向欺骗 1 双向 2 不进行ARP 欺骗 仅仅是嗅探数据包
+	
+	-p [Name of the plug-ins to be loaded, split multiple plugin use ',']
+	^
+	|--- 要加载的插件的名称 多个插件以 , 分隔
+
+	-t [Time between echo spoof packet , in ms, default is 10000ms]
+
+	^
+	|--- 欺骗数据包的发送间隔 单位是 ms
+
+	-f [Close ip forwarding]  <--- 关闭 sinarp 的包转发功能，不转发 而且系统也不转发的话 会造成对方断网
+
+	--mac [ip1-mac1,ip2-mac2] special the mac of the ip 
+
+	^
+	|--- 指定目标的 MAC 例如 1.2.3.4-00:11:22:33:44:55
+
+	目前可用的插件是 fake_http_response 作用返回一个伪造的http回复包给请求方 
+
+todo:
+	arp  spoof use request packet  
+--------------------------------------
 sinarp is a powerful arp spoof tool 
 
 it can be run under linux or windows 
