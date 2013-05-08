@@ -45,7 +45,7 @@ volatile uint32 g_is_spoof_thread_active = 0;
 volatile uint32 g_is_time_shutdown = 0;//那两个线程是不是需要关闭
 volatile int64_t g_packet_count = 0;//数据包计数
 volatile uint32 g_auto_ip_forward = 1;//默认开启转发
-plugin_list g_plugin_list = {0};  // the plugin list 
+plugin_list g_plugin_list = {0};  // the plugin list
 
 void  ( * pf_pcap_perror)(pcap_t *p, char *prefix);
 int  ( * pf_pcap_sendpacket)(pcap_t *p, u_char   *buf, int size);
@@ -113,7 +113,7 @@ BOOL  sinarp_load_plugin(const char *szPluginName)
     void *hdll = dlopen(szPluginName, RTLD_LAZY);
     if (hdll == NULL)
     {
-        DBG_MSG("load library %s failed   %s !!\n",szPluginName, strerror(errno));
+        DBG_MSG("load library %s failed   %s !!\n", szPluginName, strerror(errno));
         return FALSE;
     }
     plugin.process_packet = (BOOL ( *)(ETHeader *, uint32)) dlsym(hdll, "process_packet");
@@ -477,10 +477,10 @@ BOOL sinarp_init_pcap_funcs()
 void sinarp_copyright_msg()
 {
     sinarp_printf(\
-           "%s \n"
-           "build at %s %s\n"
-           //"基于ARP欺骗的中间人攻击工具\n"
-           "By:sincoder\nBlog:www.sincoder.com\nEmail:2bcoder@gmail.com\n",g_sinarp_version,__TIME__,__DATE__);
+                  "%s \n"
+                  "build at %s %s\n"
+                  //"基于ARP欺骗的中间人攻击工具\n"
+                  "By:sincoder\nBlog:www.sincoder.com\nEmail:2bcoder@gmail.com\n", g_sinarp_version, __TIME__, __DATE__);
 }
 
 void sinarp_show_help_msg()
@@ -1520,11 +1520,8 @@ void *sinarp_spoof_thread(void *lparam)
         default:
             break;
         }
-#ifdef WIN32
-        Sleep(g_interval);
-#else //Linux 
-        Sleep(g_interval);
-#endif
+        if (g_interval > 0)
+            Sleep(g_interval);
     }
     while (g_is_time_shutdown == 0);
     g_is_spoof_thread_active = 0;
@@ -2066,8 +2063,8 @@ int  main(int argc , char **argv)
             g_interval = atoi(argv[idx]);
             if (g_interval == 0)
             {
-                sinarp_printf("not a right interval ~~~\n");
-                goto clean;
+                sinarp_printf("Warning: send interval is 0 ...\n");
+                //goto clean;
             }
             //  if(g_interval < 200)  //去掉限制 一些防火墙太 恶心了 我不能发包发的比他慢
             //  {

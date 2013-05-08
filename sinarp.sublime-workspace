@@ -307,7 +307,7 @@
 			"file": "sinarp.c",
 			"settings":
 			{
-				"buffer_size": 72115,
+				"buffer_size": 72125,
 				"line_ending": "Unix"
 			}
 		},
@@ -509,6 +509,8 @@
 		"case_sensitive": false,
 		"find_history":
 		[
+			"g_interval",
+			"sleep",
 			"                                    \n",
 			"endif",
 			"print_message",
@@ -537,7 +539,7 @@
 	"groups":
 	[
 		{
-			"selected": 5,
+			"selected": 0,
 			"sheets":
 			[
 				{
@@ -545,15 +547,15 @@
 					"file": "sinarp.c",
 					"settings":
 					{
-						"buffer_size": 72115,
+						"buffer_size": 72125,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								4358,
-								4358
+								46380,
+								46380
 							]
 						],
 						"settings":
@@ -608,7 +610,7 @@
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 1484.0,
+						"translation.y": 28666.0,
 						"zoom_level": 1.0
 					},
 					"type": "text"
@@ -750,7 +752,8 @@
 							],
 							"origin_encoding": "UTF-8",
 							"syntax": "Packages/C++/C.tmLanguage",
-							"translate_tabs_to_spaces": false
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
 						"translation.y": 225.0,
@@ -895,7 +898,8 @@
 							],
 							"origin_encoding": "UTF-8",
 							"syntax": "Packages/C++/C.tmLanguage",
-							"translate_tabs_to_spaces": false
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
 						"translation.y": 426.0,
@@ -915,8 +919,8 @@
 						"selection":
 						[
 							[
-								308,
-								308
+								311,
+								311
 							]
 						],
 						"settings":
@@ -969,7 +973,7 @@
 							"syntax": "Packages/C++/C.tmLanguage"
 						},
 						"translation.x": 0.0,
-						"translation.y": 0.0,
+						"translation.y": 228.0,
 						"zoom_level": 1.0
 					},
 					"type": "text"
