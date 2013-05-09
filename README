@@ -40,8 +40,8 @@ Usage:sinarp [OPTIONS]
 
 	目前可用的插件是 fake_http_response 作用返回一个伪造的http回复包给请求方 
 
-todo:
-	arp  spoof use request packet  
+	--request  <-- 使用 arp request 包进行ARP欺骗
+
 --------------------------------------
 sinarp is a powerful arp spoof tool 
 
