@@ -249,6 +249,11 @@ typedef enum _spoof_type
     SPOOF_NONE // no arp spoof 
 } spoof_type;
 
+typedef enum _spoof_method
+{
+    SPOOF_METHOD_REPLAY = 0x2B,
+    SPOOF_METHOD_REQUEST
+}spoof_method;
 
 typedef struct _Host
 {

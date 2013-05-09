@@ -1,10 +1,10 @@
 SUBDIRS = fake_http_response
 
-debug:sinarp.c sinarp.h
-	gcc -ldl -lm -Wall -g -DDEBUG -fPIC -lpthread -rdynamic  -I./WpdPack/Include/ sinarp.c -o ./bin/sinarp
-	make plugin
 release:sinarp.c sinarp.c
 	gcc -ldl -lm -O3  -fPIC -lpthread -rdynamic  -I./WpdPack/Include/ sinarp.c -o ./bin/sinarp
+	make plugin
+debug:sinarp.c sinarp.h
+	gcc -ldl -lm -Wall -g -DDEBUG -fPIC -lpthread -rdynamic  -I./WpdPack/Include/ sinarp.c -o ./bin/sinarp
 	make plugin
 plugin: plugin/$(SUBDIRS)
 	for dir in $(SUBDIRS); do \

