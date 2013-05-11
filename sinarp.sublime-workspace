@@ -323,7 +323,7 @@
 			"file": "sinarp.c",
 			"settings":
 			{
-				"buffer_size": 75169,
+				"buffer_size": 75190,
 				"line_ending": "Unix"
 			}
 		},
@@ -381,6 +381,14 @@
 			{
 				"buffer_size": 606,
 				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "plugin/http_sniffer/http_sniffer.c",
+			"settings":
+			{
+				"buffer_size": 19499,
+				"line_ending": "Unix"
 			}
 		}
 	],
@@ -541,6 +549,9 @@
 		"case_sensitive": false,
 		"find_history":
 		[
+			"$^",
+			"\\",
+			"\\	",
 			"--request",
 			"sinarp_arp_spoof",
 			"sinarp_spoof_thread",
@@ -560,9 +571,20 @@
 		"highlight": true,
 		"in_selection": false,
 		"preserve_case": false,
-		"regex": false,
+		"regex": true,
 		"replace_history":
 		[
+			"\\b",
+			"\\r",
+			"\\8",
+			"\\b",
+			"\\n",
+			"\\r",
+			"\\t",
+			"",
+			"^",
+			"",
+			"    ",
 			"MAX_BUFF_SIZE"
 		],
 		"reverse": false,
@@ -574,7 +596,7 @@
 	"groups":
 	[
 		{
-			"selected": 6,
+			"selected": 8,
 			"sheets":
 			[
 				{
@@ -582,15 +604,15 @@
 					"file": "sinarp.c",
 					"settings":
 					{
-						"buffer_size": 75169,
+						"buffer_size": 75190,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								16923,
-								16923
+								49613,
+								49613
 							]
 						],
 						"settings":
@@ -645,7 +667,7 @@
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 9552.0,
+						"translation.y": 30624.0,
 						"zoom_level": 1.0
 					},
 					"type": "text"
@@ -791,7 +813,7 @@
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 225.0,
+						"translation.y": 3645.0,
 						"zoom_level": 1.0
 					},
 					"type": "text"
@@ -1080,7 +1102,7 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 399.0,
+						"translation.y": 437.0,
 						"zoom_level": 1.0
 					},
 					"type": "text"
@@ -1152,6 +1174,78 @@
 						},
 						"translation.x": 0.0,
 						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 8,
+					"file": "plugin/http_sniffer/http_sniffer.c",
+					"settings":
+					{
+						"buffer_size": 19499,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								14012,
+								14012
+							]
+						],
+						"settings":
+						{
+							"BracketHighlighterBusy": false,
+							"bh_regions":
+							[
+								"bh_regex",
+								"bh_regex_center",
+								"bh_regex_open",
+								"bh_regex_close",
+								"bh_double_quote",
+								"bh_double_quote_center",
+								"bh_double_quote_open",
+								"bh_double_quote_close",
+								"bh_square",
+								"bh_square_center",
+								"bh_square_open",
+								"bh_square_close",
+								"bh_angle",
+								"bh_angle_center",
+								"bh_angle_open",
+								"bh_angle_close",
+								"bh_curly",
+								"bh_curly_center",
+								"bh_curly_open",
+								"bh_curly_close",
+								"bh_default",
+								"bh_default_center",
+								"bh_default_open",
+								"bh_default_close",
+								"bh_unmatched",
+								"bh_unmatched_center",
+								"bh_unmatched_open",
+								"bh_unmatched_close",
+								"bh_round",
+								"bh_round_center",
+								"bh_round_open",
+								"bh_round_close",
+								"bh_tag",
+								"bh_tag_center",
+								"bh_tag_open",
+								"bh_tag_close",
+								"bh_single_quote",
+								"bh_single_quote_center",
+								"bh_single_quote_open",
+								"bh_single_quote_close"
+							],
+							"origin_encoding": "ASCII",
+							"syntax": "Packages/C++/C.tmLanguage",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 8336.0,
 						"zoom_level": 1.0
 					},
 					"type": "text"

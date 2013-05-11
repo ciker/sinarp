@@ -1655,6 +1655,9 @@ void  cleanup(int s)
 }
 #endif
 
+/*
+恢复对方主机的 ARP 表 
+*/
 void sinarp_restore_arp_table()
 {
     //从主机列表里面取出正确的 ip 对应的 mac
